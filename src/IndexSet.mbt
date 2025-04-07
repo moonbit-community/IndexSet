@@ -18,6 +18,8 @@ let default_init_capacity = 8
 
 ///|
 /// Create new indexed hash set.
+///|
+/// Create new indexed hash set.
 pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
   {
     core: {
@@ -26,6 +28,7 @@ pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
       head: -1,
       tail: -1,
       position_to_idx: [], // 初始化为空数组
+      idx_to_position: @hashmap.new(), // 初始化为空映射
     },
     size: 0,
     capacity,
@@ -109,6 +112,9 @@ pub fn add[K : Hash + Eq](self : T[K], key : K) -> Unit {
   // 更新位置到索引的映射
   self.core.position_to_idx.push(bucket_idx)
 
+  // 更新索引到位置的映射
+  self.core.idx_to_position.set(bucket_idx, self.size)
+
   // 更新大小
   self.size += 1
 }
@@ -129,18 +135,17 @@ pub fn get_at[K](self : T[K], index : Int) -> K? {
 
 ///|
 /// Get the index of a key
-pub fn index_of[K : Eq](self : T[K], key : K) -> Int? {
-  // 从头节点开始遍历
-  let mut current = self.core.head
-  let mut index = 0
-  while current != -1 {
-    if self.core.entries[current].key == key {
-      return Some(index)
-    }
-    current = self.core.entries[current].next
-    index += 1
+pub fn index_of[K : Hash + Eq](self : T[K], key : K) -> Int? {
+  // 先检查键是否存在
+  match self.key_to_idx.get(key) {
+    Some(bucket_idx) =>
+      // 从桶索引到位置的映射获取位置索引
+      match self.core.idx_to_position.get(bucket_idx) {
+        Some(position) => Some(position)
+        None => None // 理论上不应该发生
+      }
+    None => None // 键不存在
   }
-  None
 }
 
 ///|
@@ -155,7 +160,8 @@ pub fn contains[K : Hash + Eq](self : T[K], key : K) -> Bool {
 }
 
 ///|
-/// Remove a key from hash set.
+
+///| Remove a key from hash set with O(1) complexity.
 pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
   if self.size == 0 {
     return
@@ -168,18 +174,28 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
       let entry = self.core.entries[idx]
       let hash = entry.hash
 
-      // 找到元素在position_to_idx中的位置
-      let mut position = -1
-      for i in 0..<self.size {
-        if self.core.position_to_idx[i] == idx {
-          position = i
-          break
-        }
+      // 从索引到位置的映射中获取位置
+      let position = match self.core.idx_to_position.get(idx) {
+        Some(pos) => pos
+        None => return // 应该不会发生，防御性编程
       }
-      if position == -1 {
-        // 应该不会发生，防御性编程
-        return
+
+      // 如果要删除的不是最后一个元素，则进行交换
+      if position < self.size - 1 {
+        // 获取最后一个元素的索引
+        let last_idx = self.core.position_to_idx[self.size - 1]
+        ignore(self.core.entries[last_idx].key)
+
+        // 将最后一个元素移动到被删除元素的位置
+        self.core.position_to_idx[position] = last_idx
+        self.core.idx_to_position.set(last_idx, position)
       }
+
+      // 从位置映射中移除最后一个位置
+      ignore(self.core.position_to_idx.pop())
+
+      // 从索引到位置的映射中移除被删除元素
+      self.core.idx_to_position.remove(idx)
 
       // 从哈希表中移除
       self.core.hash_to_idx.remove(hash)
@@ -204,19 +220,10 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
       // 从映射中移除被删除的键
       self.key_to_idx.remove(key)
 
-      // 更新位置到索引的映射
-      // 移除当前位置的元素并将后面的元素前移
-      for i in position..<(self.size - 1) {
-        self.core.position_to_idx[i] = self.core.position_to_idx[i + 1]
-      }
-      ignore(self.core.position_to_idx.pop())
-
       // 更新大小
       self.size -= 1
     }
-    None => {
-      return 
-    } // 键不存在，不执行任何操作
+    None => return // 键不存在，不执行任何操作
   }
 }
 
@@ -264,6 +271,7 @@ pub fn clear[K](self : T[K]) -> Unit {
   self.core.head = -1
   self.core.tail = -1
   self.core.position_to_idx = [] // 清空位置映射
+  self.core.idx_to_position = @hashmap.new() // 清空索引到位置的映射
   self.size = 0
   self.key_to_idx = @hashmap.new()
 }
@@ -355,6 +363,7 @@ fn insert_into_table[K : Hash](
 
 ///|
 ///|
+///|
 fn grow[K : Hash + Eq](self : T[K]) -> Unit {
   // 保存旧数据
   let old_entries = self.core.entries
@@ -368,6 +377,7 @@ fn grow[K : Hash + Eq](self : T[K]) -> Unit {
   self.core.head = -1
   self.core.tail = -1
   self.core.position_to_idx = [] // 重置位置映射
+  self.core.idx_to_position = @hashmap.new() // 重置索引到位置的映射
   self.size = 0
   self.key_to_idx = @hashmap.new()
 
@@ -419,6 +429,9 @@ pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
   // 从映射中移除
   self.key_to_idx.remove(key)
 
+  // 从索引到位置的映射中移除
+  self.core.idx_to_position.remove(tail_idx)
+
   // 从位置映射中移除最后一个元素
   ignore(self.core.position_to_idx.pop())
 
@@ -431,8 +444,7 @@ pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
 
 ///|
 /// 移除并返回第一个插入的元素（头部元素）
-///|
-/// 移除并返回第一个插入的元素（头部元素）
+/// 时间复杂度：O(1)
 pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
   if self.size == 0 {
     return None
@@ -443,7 +455,7 @@ pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
   let head_element = self.core.entries[head_idx]
   let key = head_element.key
 
-  // 从哈希表中移除映射 - 直接操作
+  // 从哈希表中移除映射
   self.core.hash_to_idx.remove(head_element.hash)
 
   // 调整链表
@@ -456,14 +468,23 @@ pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
     self.core.tail = -1
   }
 
-  // 从映射中移除
+  // 从键到索引的映射中移除
   self.key_to_idx.remove(key)
 
-  // 更新位置到索引的映射
-  // 移除第一个位置的元素并将后面的元素前移
-  for i in 0..<(self.size - 1) {
-    self.core.position_to_idx[i] = self.core.position_to_idx[i + 1]
+  // 从索引到位置的映射中移除
+  self.core.idx_to_position.remove(head_idx)
+
+  // 使用交换策略：将最后一个元素移动到第一个位置
+  if self.size > 1 {
+    // 获取最后一个元素的索引
+    let last_idx = self.core.position_to_idx[self.size - 1]
+
+    // 将最后一个元素移动到第一个位置
+    self.core.position_to_idx[0] = last_idx
+    self.core.idx_to_position.set(last_idx, 0)
   }
+
+  // 移除最后一个位置的映射（现在已经被移动或者是被删除的元素）
   ignore(self.core.position_to_idx.pop())
 
   // 更新大小
@@ -548,9 +569,6 @@ pub fn sorted_by[K : Hash + Eq, B : Compare](
 ///|
 /// 就地排序集合元素
 /// 时间复杂度: O(n log n)，其中n是集合大小
-///|
-/// 就地排序集合元素
-/// 时间复杂度: O(n log n)，其中n是集合大小
 pub fn sort[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
   if self.size <= 1 {
     return
@@ -570,7 +588,7 @@ pub fn sort[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
     self.add(arr[i])
   }
 
-  // position_to_idx 已经在 add 中更新
+  // position_to_idx 和 idx_to_position 已经在 add 和 clear 中更新
 }
 
 ///|
