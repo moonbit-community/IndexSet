@@ -176,6 +176,7 @@ pub fn contains[K : Hash + Eq](self : T[K], key : K) -> Bool {
 
 ///|
 /// Remove a key from hash set.
+
 ///|
 /// Remove a key from hash set - O(1) 高效实现
 pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
@@ -190,71 +191,34 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
       let entry = self.core.entries[idx]
       let hash = entry.hash
 
-      // 从哈希表中移除 - 直接操作，无需遍历
+      // 从哈希表中移除
       self.core.hash_to_idx.remove(hash)
 
-      // 交换删除策略：将要删除的元素与链表尾元素交换
-      if idx != self.core.tail {
-        // 只有当删除的不是尾元素时才需要交换
-        let tail_idx = self.core.tail
-        let tail_entry = self.core.entries[tail_idx]
-
-        // 1. 更新尾元素在哈希表中的引用 - 直接设置
-        self.core.hash_to_idx.set(tail_entry.hash, idx)
-
-        // 2. 将尾元素数据移到被删除元素的位置
-        self.core.entries[idx] = tail_entry
-
-        // 3. 更新链表连接
-        // 如果被删除元素是头节点
-        if entry.prev == -1 {
-          self.core.head = idx
-        } else {
-          self.core.entries[entry.prev].next = idx
-        }
-
-        // 如果被删除元素有后继
-        if entry.next != -1 {
-          self.core.entries[entry.next].prev = idx
-        }
-
-        // 4. 更新尾元素的前驱节点的next指针
-        if tail_entry.prev != -1 {
-          self.core.entries[tail_entry.prev].next = -1
-        }
-
-        // 5. 如果尾元素是头节点(即只有一个元素)
-        if tail_entry.prev == -1 {
-          self.core.head = -1
-          self.core.tail = -1
-        } else {
-          // 更新尾节点指针
-          self.core.tail = tail_entry.prev
-        }
-
-        // 6. 更新key_to_idx映射
-        self.key_to_idx.remove(key)
-        self.key_to_idx.set(tail_entry.key, idx)
+      // 修复链表指针
+      // 如果有前一个元素，更新它的next指针
+      if entry.prev != -1 {
+        self.core.entries[entry.prev].next = entry.next
       } else {
-        // 如果删除的就是尾元素，则直接更新链表
-        if entry.prev != -1 {
-          self.core.entries[entry.prev].next = -1
-          self.core.tail = entry.prev
-        } else {
-          // 这是唯一的元素
-          self.core.head = -1
-          self.core.tail = -1
-        }
-
-        // 从映射中移除
-        self.key_to_idx.remove(key)
+        // 如果是头节点，更新head指针
+        self.core.head = entry.next
       }
+
+      // 如果有后一个元素，更新它的prev指针
+      if entry.next != -1 {
+        self.core.entries[entry.next].prev = entry.prev
+      } else {
+        // 如果是尾节点，更新tail指针
+        self.core.tail = entry.prev
+      }
+
+      // 从映射中移除被删除的键
+      self.key_to_idx.remove(key)
 
       // 更新大小
       self.size -= 1
     }
-    None => ignore(None)
-  } // 键不存在，不执行任何操作
+    None => ignore(None) // 键不存在，不执行任何操作
+  }
 }
 
 ///|

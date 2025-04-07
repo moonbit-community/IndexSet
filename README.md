@@ -23,7 +23,7 @@
 
 ## Remove
 
-​        你可以通过`remove()` 方法，移除`IndexSet`  中的元素
+ 你可以通过`remove()` 方法，移除`IndexSet`  中的元素
 
 ```moonbit
   let s = @IndexSet.of(["a", "b", "c"])
@@ -110,6 +110,25 @@ set.eachi(fn(i, k) { arr2.push((i, k)) })//arr2:[(0, "a"), (1, "b"), (2, "c")]
   assert_eq!(m.peek_last().unwrap(), "c")
   assert_eq!(m.peek_first().unwrap(), "a")
 
+```
+
+## Sort
+
+  `IndexSet`  可以使用`sorted`方法对元素进行排序，返回排序后 键的数组。`sorted` 排序并不会改变原来容器的元素
+
+````moonbit
+  let set = @IndexSet.of([5, 2, 4, 1, 3])
+  let sorted_set = set.sorted(fn(a, b) { a - b })
+  assert_eq!(set.to_array(), [5, 2, 4, 1, 3])
+  assert_eq!(sorted_set.to_array(), [1, 2, 3, 4, 5])
+````
+
+如果你想使用原地算法进行排序，可以采用`sort`方法
+
+```moonbit
+  let set = @IndexSet.of([5, 2, 4, 1, 3])
+  set.sort(fn(a, b) { a - b })
+  assert_eq!(set.to_array(), [1, 2, 3, 4, 5])
 ```
 
 

@@ -397,3 +397,112 @@ test "shift_and_peek" {
   assert_eq!(m.peek_first(), Some(2))
   assert_eq!(m.size(), 2)
 }
+
+///|
+test "sorted" {
+  let set = @IndexSet.of([5, 2, 4, 1, 3])
+  let sorted_set = set.sorted(fn(a, b) { a - b })
+
+  // 原集合保持不变
+  assert_eq!(set.to_array(), [5, 2, 4, 1, 3])
+
+  // 新集合已排序
+  assert_eq!(sorted_set.to_array(), [1, 2, 3, 4, 5])
+}
+
+///|
+test "sorted_by_key" {
+  let set = @IndexSet.of([5, 2, 4, 1, 3])
+  let sorted_set = set.sorted_by_key()
+
+  // 原集合保持不变
+  assert_eq!(set.to_array(), [5, 2, 4, 1, 3])
+
+  // 新集合已按自然顺序排序
+  assert_eq!(sorted_set.to_array(), [1, 2, 3, 4, 5])
+}
+
+///|
+test "sorted_by" {
+  // 按元素对10的余数排序
+  let set = @IndexSet.of([12, 5, 8, 3, 16, 7])
+  let sorted_set = set.sorted_by(fn(n) { n % 10 })
+
+  // 原集合保持不变
+  assert_eq!(set.to_array(), [12, 5, 8, 3, 16, 7])
+
+  // 新集合按余数排序：12(2), 3(3), 5(5), 16(6), 7(7), 8(8)
+  assert_eq!(sorted_set.to_array(), [12, 3, 5, 16, 7, 8])
+}
+
+///|
+test "sort" {
+  let set = @IndexSet.of([5, 2, 4, 1, 3])
+  set.sort(fn(a, b) { a - b })
+
+  // 集合已排序
+  assert_eq!(set.to_array(), [1, 2, 3, 4, 5])
+}
+
+///|
+test "sort_by_key" {
+  let set = @IndexSet.of([5, 2, 4, 1, 3])
+  set.sort_by_key()
+
+  // 集合已按自然顺序排序
+  assert_eq!(set.to_array(), [1, 2, 3, 4, 5])
+}
+
+///|
+test "sort_by" {
+  // 创建一个字符串集合
+  let set = @IndexSet.of(["apple", "banana", "kiwi", "orange", "grape"])
+
+  // 按字符串长度排序
+  set.sort_by(fn(s) { s.length() })
+
+  // 集合已按字符串长度排序: kiwi(4), apple(5), grape(5), banana(6), orange(6)
+  assert_eq!(set.to_array(), ["kiwi", "apple", "grape", "banana", "orange"])
+}
+
+///|
+test "sorted_desc" {
+  let set = @IndexSet.of([1, 4, 2, 5, 3])
+  let sorted_set = set.sorted_desc(fn(a, b) { a - b })
+
+  // 原集合保持不变
+  assert_eq!(set.to_array(), [1, 4, 2, 5, 3])
+
+  // 新集合已降序排序
+  assert_eq!(sorted_set.to_array(), [5, 4, 3, 2, 1])
+}
+
+///|
+test "sorted_by_key_desc" {
+  let set = @IndexSet.of([1, 4, 2, 5, 3])
+  let sorted_set = set.sorted_by_key_desc()
+
+  // 原集合保持不变
+  assert_eq!(set.to_array(), [1, 4, 2, 5, 3])
+
+  // 新集合已按自然顺序降序排序
+  assert_eq!(sorted_set.to_array(), [5, 4, 3, 2, 1])
+}
+
+///|
+test "sort_desc" {
+  let set = @IndexSet.of([1, 4, 2, 5, 3])
+  set.sort_desc(fn(a, b) { a - b })
+
+  // 集合已降序排序
+  assert_eq!(set.to_array(), [5, 4, 3, 2, 1])
+}
+
+///|
+test "sort_by_key_desc" {
+  let set = @IndexSet.of([1, 4, 2, 5, 3])
+  set.sort_by_key_desc()
+
+  // 集合已按自然顺序降序排序
+  assert_eq!(set.to_array(), [5, 4, 3, 2, 1])
+}
