@@ -150,37 +150,12 @@ pub fn contains[K : Hash + Eq](self : T[K], key : K) -> Bool {
     return false
   }
 
-  // 检查 key_to_idx 中是否存在该键
-  if self.key_to_idx.contains(key) {
-    return true
-  }
-
-  // 计算哈希值
-  let hash = key.hash()
-
-  // 从哈希表中查找
-  match self.core.hash_to_idx.get(hash) {
-    Some(entry_idx) =>
-      // 确保索引有效且在entries数组范围内
-      if entry_idx >= 0 && entry_idx < self.core.entries.length() {
-        let entry = self.core.entries[entry_idx]
-        // 检查键是否匹配（处理哈希冲突）
-        if entry.hash == hash && entry.key == key {
-          return true
-        }
-      }
-    None => ignore(None)
-  }
-
-  // 没有找到或键不匹配
-  false
+  // 直接检查 key_to_idx 中是否存在该键
+  self.key_to_idx.contains(key)
 }
 
 ///|
 /// Remove a key from hash set.
-
-///|
-/// Remove a key from hash set - O(1) 高效实现
 pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
   if self.size == 0 {
     return

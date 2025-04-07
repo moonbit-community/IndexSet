@@ -440,6 +440,9 @@ test "sort" {
 
   // 集合已排序
   assert_eq!(set.to_array(), [1, 2, 3, 4, 5])
+  let set2 = @IndexSet.of([1])
+  set.sort(fn(a, b) { b - a })
+  assert_eq!(set2.to_array(), [1])
 }
 
 ///|
