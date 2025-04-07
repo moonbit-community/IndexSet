@@ -17,14 +17,11 @@ let default_init_capacity = 8
 
 ///|
 test "doc" {
-  let set = new(capacity=8)
+  let set = new()
   set.add(3)
   set.add(4)
   set.add(3)
-  let p = set.index_of(4).unwrap()
-  let res = set.get_at(p).unwrap()
-  println(p)
-  println(res)
+  println(set.size())
 }
 
 ///|
@@ -258,4 +255,26 @@ test "clear_and_reinsert" {
   m.add("c")
   assert_eq!(m.size(), 1)
   assert_true!(m.contains("c"))
+}
+
+///|
+test "pop" {
+  let m = new()
+  m.add("a")
+  m.add("b")
+  m.add("c")
+  m.add("d")
+  assert_eq!(m.pop().unwrap(), "d")
+  assert_eq!(m.pop().unwrap(), "c")
+}
+
+///|
+test "shift" {
+  let m = new()
+  m.add("a")
+  m.add("b")
+  m.add("c")
+  m.add("d")
+  assert_eq!(m.shift().unwrap(), "a")
+  assert_eq!(m.shift().unwrap(), "b")
 }

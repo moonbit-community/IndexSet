@@ -50,6 +50,10 @@ fn get_at[K](T[K], Int) -> K?
 
 fn index_of[K : Eq](T[K], K) -> Int?
 
+fn pop[K](self : T[K]) -> K?
+
+fn shift[K](self : T[K]) -> K?
+
 type T[K]
 impl T {
   add[K : Hash + Eq](Self[K], K) -> Unit
@@ -79,6 +83,8 @@ impl T {
   union[K : Hash + Eq](Self[K], Self[K]) -> Self[K]
   get_at[K](T[K], Int) -> K?
   index_of[K : Eq](T[K], K) -> Int?
+  pop[K](self : T[K]) -> K?
+  shift[K](self : T[K]) -> K?
 }
 impl[K : Show] Show for T[K]
 impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X]

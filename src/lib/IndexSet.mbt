@@ -21,7 +21,7 @@ let default_init_capacity = 8
 pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
   {
     core: {
-      hash_indices: FixedArray::make(capacity, None),
+      hash_to_idx: @hashmap.new(), // 使用HashMap代替FixedArray
       entries: [],
       head: -1,
       tail: -1,
@@ -29,6 +29,7 @@ pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
     size: 0,
     capacity,
     growAt: calc_grow_threshold(capacity),
+    key_to_idx: @hashmap.new(),
   }
 }
 
@@ -66,7 +67,6 @@ pub fn add[K : Hash + Eq](self : T[K], key : K) -> Unit {
 
   // 计算哈希值
   let hash = key.hash()
-  let idx = self.index(hash)
 
   // 检查键是否已存在
   if self.contains(key) {
@@ -84,6 +84,9 @@ pub fn add[K : Hash + Eq](self : T[K], key : K) -> Unit {
 
   // 添加到桶数组
   self.core.entries.push(new_bucket)
+
+  // 在映射中记录键到索引的映射
+  self.key_to_idx.set(key, bucket_idx)
 
   // 更新链表结构
   if self.core.tail != -1 {
@@ -149,89 +152,113 @@ pub fn contains[K : Hash + Eq](self : T[K], key : K) -> Bool {
   if self.size == 0 {
     return false
   }
-  let hash = key.hash()
-  let idx = self.index(hash)
 
-  // 在哈希表中查找
-  let mut i = 0
-  let mut curr_idx = idx
-  while i < self.capacity {
-    match self.core.hash_indices[curr_idx] {
-      Some(entry_idx) =>
-        // 确保索引有效且在entries数组范围内
-        if entry_idx >= 0 && entry_idx < self.core.entries.length() {
-          let entry = self.core.entries[entry_idx]
-          if entry.hash == hash && entry.key == key {
-            return true
-          }
-        }
-      None =>
-        // 在初始位置找不到且遇到空槽，表示键不存在
-        if curr_idx == idx || i > 0 {
-          return false
-        }
-    }
-    curr_idx = self.next_index(curr_idx)
-    i += 1
+  // 检查 key_to_idx 中是否存在该键
+  if self.key_to_idx.contains(key) {
+    return true
   }
+
+  // 计算哈希值
+  let hash = key.hash()
+
+  // 从哈希表中查找
+  match self.core.hash_to_idx.get(hash) {
+    Some(entry_idx) =>
+      // 确保索引有效且在entries数组范围内
+      if entry_idx >= 0 && entry_idx < self.core.entries.length() {
+        let entry = self.core.entries[entry_idx]
+        // 检查键是否匹配（处理哈希冲突）
+        if entry.hash == hash && entry.key == key {
+          return true
+        }
+      }
+    None => ignore(None)
+  }
+
+  // 没有找到或键不匹配
   false
 }
 
 ///|
 /// Remove a key from hash set.
-/// Remove a key from hash set.
+///|
+/// Remove a key from hash set - O(1) 高效实现
 pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
   if self.size == 0 {
     return
   }
-  let hash = key.hash()
-  let idx = self.index(hash)
 
-  // 在哈希表中查找元素
-  let mut i = 0
-  let mut curr_idx = idx
-  let mut entry_idx : Int? = None
-  while i < self.capacity {
-    match self.core.hash_indices[curr_idx] {
-      Some(bucket_idx) => {
-        let entry = self.core.entries[bucket_idx]
-        if entry.hash == hash && entry.key == key {
-          entry_idx = Some(bucket_idx)
-          // 从哈希表中移除
-          self.core.hash_indices[curr_idx] = None
-          self.shift_back(curr_idx)
-          break
-        }
-      }
-      None => break
-    }
-    curr_idx = self.next_index(curr_idx)
-    i += 1
-  }
-
-  // 如果找到了元素，从链表中移除
-  match entry_idx {
+  // 直接从映射中获取索引，O(1)操作
+  match self.key_to_idx.get(key) {
     Some(idx) => {
+      // 获取被删除元素的链表信息
       let entry = self.core.entries[idx]
+      let hash = entry.hash
 
-      // 更新前驱节点的后继
-      if entry.prev != -1 {
-        self.core.entries[entry.prev].next = entry.next
+      // 从哈希表中移除 - 直接操作，无需遍历
+      self.core.hash_to_idx.remove(hash)
+
+      // 交换删除策略：将要删除的元素与链表尾元素交换
+      if idx != self.core.tail {
+        // 只有当删除的不是尾元素时才需要交换
+        let tail_idx = self.core.tail
+        let tail_entry = self.core.entries[tail_idx]
+
+        // 1. 更新尾元素在哈希表中的引用 - 直接设置
+        self.core.hash_to_idx.set(tail_entry.hash, idx)
+
+        // 2. 将尾元素数据移到被删除元素的位置
+        self.core.entries[idx] = tail_entry
+
+        // 3. 更新链表连接
+        // 如果被删除元素是头节点
+        if entry.prev == -1 {
+          self.core.head = idx
+        } else {
+          self.core.entries[entry.prev].next = idx
+        }
+
+        // 如果被删除元素有后继
+        if entry.next != -1 {
+          self.core.entries[entry.next].prev = idx
+        }
+
+        // 4. 更新尾元素的前驱节点的next指针
+        if tail_entry.prev != -1 {
+          self.core.entries[tail_entry.prev].next = -1
+        }
+
+        // 5. 如果尾元素是头节点(即只有一个元素)
+        if tail_entry.prev == -1 {
+          self.core.head = -1
+          self.core.tail = -1
+        } else {
+          // 更新尾节点指针
+          self.core.tail = tail_entry.prev
+        }
+
+        // 6. 更新key_to_idx映射
+        self.key_to_idx.remove(key)
+        self.key_to_idx.set(tail_entry.key, idx)
       } else {
-        // 如果是头节点，更新头节点
-        self.core.head = entry.next
+        // 如果删除的就是尾元素，则直接更新链表
+        if entry.prev != -1 {
+          self.core.entries[entry.prev].next = -1
+          self.core.tail = entry.prev
+        } else {
+          // 这是唯一的元素
+          self.core.head = -1
+          self.core.tail = -1
+        }
+
+        // 从映射中移除
+        self.key_to_idx.remove(key)
       }
 
-      // 更新后继节点的前驱
-      if entry.next != -1 {
-        self.core.entries[entry.next].prev = entry.prev
-      } else {
-        // 如果是尾节点，更新尾节点
-        self.core.tail = entry.prev
-      }
+      // 更新大小
       self.size -= 1
     }
-    None => ...
+    None => ignore(None)
   } // 键不存在，不执行任何操作
 }
 
@@ -274,11 +301,12 @@ pub fn eachi[K](self : T[K], f : (Int, K) -> Unit) -> Unit {
 ///|
 /// Clears the set, removing all keys. Keeps the allocated space.
 pub fn clear[K](self : T[K]) -> Unit {
-  self.core.hash_indices = FixedArray::make(self.capacity, None)
+  self.core.hash_to_idx = @hashmap.new() // 重置为新的哈希表
   self.core.entries = []
   self.core.head = -1
   self.core.tail = -1
   self.size = 0
+  self.key_to_idx = @hashmap.new()
 }
 
 ///|
@@ -363,76 +391,15 @@ fn insert_into_table[K : Hash](
   hash : Int,
   bucket_idx : Int
 ) -> Unit {
-  let mut i = 0
-  let mut idx = self.index(hash)
-  while i < self.capacity {
-    match self.core.hash_indices[idx] {
-      None => {
-        self.core.hash_indices[idx] = Some(bucket_idx)
-        return
-      }
-      Some(_) => {
-        // 找下一个位置
-        idx = self.next_index(idx)
-        i += 1
-      }
-    }
-  }
+  // 直接在哈希表中设置键值对，无需线性探测
+  self.core.hash_to_idx.set(hash, bucket_idx)
 }
 
 ///|
-fn shift_back[K](self : T[K], start_index : Int) -> Unit {
-  let mut prev = start_index
-  let mut curr = self.next_index(start_index)
-  let mut i = 0
 
-  // 标记已处理过的节点，防止循环
-  let visited = FixedArray::make(self.capacity, false)
-  while i < self.capacity {
-    // 避免无限循环
-    if visited[curr] {
-      break
-    }
-    visited[curr] = true
-    match self.core.hash_indices[curr] {
-      Some(entry_idx) => {
-        let ideal_pos = self.index(self.core.entries[entry_idx].hash)
-
-        // 计算理想位置到当前位置的距离
-        let ideal_dist = (curr - ideal_pos + self.capacity) % self.capacity
-        let prev_dist = (prev - ideal_pos + self.capacity) % self.capacity
-
-        // 如果移动到prev位置会让元素更接近其理想位置
-        if ideal_dist > prev_dist {
-          // 将元素向前移动
-          self.core.hash_indices[prev] = Some(entry_idx)
-          self.core.hash_indices[curr] = None
-          prev = curr
-        } else {
-          // 否则保持当前位置，但更新prev指针
-          prev = curr
-        }
-      }
-      None =>
-        // 遇到空槽，停止移动
-        break
-    }
-    curr = self.next_index(curr)
-    i += 1
-  }
-}
-
+///|
 ///|
 fn grow[K : Hash + Eq](self : T[K]) -> Unit {
-  // 处理零容量情况
-  if self.capacity == 0 {
-    self.capacity = default_init_capacity
-    self.growAt = calc_grow_threshold(self.capacity)
-    self.size = 0
-    self.core.hash_indices = FixedArray::make(self.capacity, None)
-    return
-  }
-
   // 保存旧数据
   let old_entries = self.core.entries
   let old_head = self.core.head
@@ -440,11 +407,12 @@ fn grow[K : Hash + Eq](self : T[K]) -> Unit {
   // 创建新的存储
   self.capacity = self.capacity * 2
   self.growAt = calc_grow_threshold(self.capacity)
-  self.core.hash_indices = FixedArray::make(self.capacity, None)
+  self.core.hash_to_idx = @hashmap.new() // 使用新的哈希表
   self.core.entries = []
   self.core.head = -1
   self.core.tail = -1
   self.size = 0
+  self.key_to_idx = @hashmap.new()
 
   // 重新添加所有元素，保持原顺序
   let mut current = old_head
@@ -482,4 +450,77 @@ fn calc_grow_threshold(capacity : Int) -> Int {
 ///|
 pub impl[K : Show] Show for T[K] with output(self, logger) {
   logger.write_iter(self.iter(), prefix="@indexset.of([", suffix="])")
+}
+
+///|
+/// 移除并返回最后一个插入的元素（尾部元素）
+/// 如果集合为空，返回 None
+///|
+/// 移除并返回最后一个插入的元素（尾部元素）
+pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
+  if self.size == 0 {
+    return None
+  }
+
+  // 获取尾部元素
+  let tail_idx = self.core.tail
+  let tail_element = self.core.entries[tail_idx]
+  let key = tail_element.key
+
+  // 从哈希表中移除映射 - 直接操作
+  self.core.hash_to_idx.remove(tail_element.hash)
+
+  // 调整链表
+  if tail_element.prev != -1 {
+    self.core.entries[tail_element.prev].next = -1
+    self.core.tail = tail_element.prev
+  } else {
+    // 集合中只有一个元素，清空链表
+    self.core.head = -1
+    self.core.tail = -1
+  }
+
+  // 从映射中移除
+  self.key_to_idx.remove(key)
+
+  // 更新大小
+  self.size -= 1
+
+  // 返回移除的元素
+  Some(key)
+}
+
+///|
+/// 移除并返回第一个插入的元素（头部元素）
+pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
+  if self.size == 0 {
+    return None
+  }
+
+  // 获取头部元素
+  let head_idx = self.core.head
+  let head_element = self.core.entries[head_idx]
+  let key = head_element.key
+
+  // 从哈希表中移除映射 - 直接操作
+  self.core.hash_to_idx.remove(head_element.hash)
+
+  // 调整链表
+  if head_element.next != -1 {
+    self.core.entries[head_element.next].prev = -1
+    self.core.head = head_element.next
+  } else {
+    // 集合中只有一个元素，清空链表
+    self.core.head = -1
+    self.core.tail = -1
+  }
+
+  // 从映射中移除
+  self.key_to_idx.remove(key)
+
+  // 更新大小
+  self.size -= 1
+
+  // 返回移除的元素
+  Some(key)
 }

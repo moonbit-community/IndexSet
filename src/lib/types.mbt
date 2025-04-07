@@ -22,7 +22,7 @@ priv struct Bucket[K] {
 ///|
 /// IndexSet核心结构，包含所有数据组织功能
 priv struct IndexSetCore[K] {
-  mut hash_indices : FixedArray[Int?] // 哈希表：存储哈希到桶索引的映射，None表示空槽
+  mut hash_to_idx : @hashmap.T[Int, Int] // 哈希表：存储哈希到桶索引的映射，None表示空槽
   mut entries : Array[Bucket[K]] // 数组：存储实际的键及其链表信息
   mut head : Int // 链表头节点索引，-1表示空链表
   mut tail : Int // 链表尾节点索引，-1表示空链表
@@ -41,8 +41,9 @@ priv struct IndexSetCore[K] {
 /// assert_eq!(set.get_at(3), 4)  // Access by index
 /// ```
 struct T[K] {
-   core : IndexSetCore[K] // 包含核心数据结构
+  core : IndexSetCore[K] // 包含核心数据结构
   mut size : Int // 元素数量
   mut capacity : Int // 当前哈希表容量
   mut growAt : Int // 扩容阈值
+  mut key_to_idx : @hashmap.T[K, Int]
 }
