@@ -26,6 +26,7 @@ priv struct IndexSetCore[K] {
   mut entries : Array[Bucket[K]] // 数组：存储实际的键及其链表信息
   mut head : Int // 链表头节点索引，-1表示空链表
   mut tail : Int // 链表尾节点索引，-1表示空链表
+  mut position_to_idx : Array[Int]            // 新增：位置到桶索引的映射
 } derive(Show)
 
 ///|

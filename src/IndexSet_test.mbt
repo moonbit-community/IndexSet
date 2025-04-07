@@ -25,12 +25,9 @@ test "doc" {
 
 ///|
 test "123" {
-  let m = @IndexSet.new()
-  m.add("a")
-  m.add("b")
-  m.add("c")
-  assert_eq!(m.peek_last().unwrap(), "c")
-  assert_eq!(m.peek_first().unwrap(), "a")
+  let set = @IndexSet.of([100, 200, 300, 400, 500])
+  assert_eq!(set.get_at(0), Some(100))
+  assert_eq!(set.index_of(300), Some(2))
 }
 
 ///|
@@ -75,6 +72,7 @@ test "is_empty" {
   assert_eq!(m.is_empty(), true)
   m.add("a")
   assert_eq!(m.is_empty(), false)
+  m.remove("a")
   m.remove("a")
   assert_eq!(m.is_empty(), true)
 }
@@ -505,4 +503,56 @@ test "sort_by_key_desc" {
 
   // 集合已按自然顺序降序排序
   assert_eq!(set.to_array(), [5, 4, 3, 2, 1])
+}
+
+///|
+test "get_at basic functionality" {
+  let set = @IndexSet.of([10, 20, 30, 40, 50])
+
+  // 测试正常索引访问
+  assert_eq!(set.get_at(0), Some(10))
+  assert_eq!(set.get_at(1), Some(20))
+  assert_eq!(set.get_at(2), Some(30))
+  assert_eq!(set.get_at(3), Some(40))
+  assert_eq!(set.get_at(4), Some(50))
+
+  // 测试索引顺序符合插入顺序
+  let values = []
+  for i in 0..<set.size() {
+    match set.get_at(i) {
+      Some(v) => values.push(v)
+      None => ignore(None) // 不应发生
+    }
+  }
+  assert_eq!(values, [10, 20, 30, 40, 50])
+}
+
+///|
+test "get_at boundary cases" {
+  let set = @IndexSet.of([1, 2, 3])
+
+  // 测试边界情况
+  assert_eq!(set.get_at(-1), None) // 负索引
+  assert_eq!(set.get_at(3), None) // 越界索引
+  assert_eq!(set.get_at(100), None) // 远超越界索引
+
+  // 空集合测试
+  let empty_set = @IndexSet.new()
+  assert_eq!(empty_set.get_at(0), None) // 空集合任何索引都返回None
+}
+
+///|
+test "index_of basic functionality" {
+  let set = @IndexSet.of(["apple", "banana", "cherry", "date", "elderberry"])
+
+  // 测试正常元素查找
+  assert_eq!(set.index_of("apple"), Some(0))
+  assert_eq!(set.index_of("banana"), Some(1))
+  assert_eq!(set.index_of("cherry"), Some(2))
+  assert_eq!(set.index_of("date"), Some(3))
+  assert_eq!(set.index_of("elderberry"), Some(4))
+
+  // 测试不存在的元素
+  assert_eq!(set.index_of("fig"), None)
+  assert_eq!(set.index_of("grape"), None)
 }

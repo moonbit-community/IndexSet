@@ -131,6 +131,18 @@ set.eachi(fn(i, k) { arr2.push((i, k)) })//arr2:[(0, "a"), (1, "b"), (2, "c")]
   assert_eq!(set.to_array(), [1, 2, 3, 4, 5])
 ```
 
+## Get_at & index_of
+
+  `get_at(x)`  可以获取第x个插入元素的值，`index_of(T)`  则是可以获取元素T在`IndexSet` 中的下标
+
+````moonbit
+  let set = @IndexSet.of([100, 200, 300, 400, 500])
+  assert_eq!(set.get_at(0), Some(100))
+  assert_eq!(set.index_of(300), Some(2))
+````
+
+
+
 
 
 

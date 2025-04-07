@@ -20,7 +20,13 @@ let default_init_capacity = 8
 /// Create new indexed hash set.
 pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
   {
-    core: { hash_to_idx: @hashmap.new(), entries: [], head: -1, tail: -1 },
+    core: {
+      hash_to_idx: @hashmap.new(),
+      entries: [],
+      head: -1,
+      tail: -1,
+      position_to_idx: [], // 初始化为空数组
+    },
     size: 0,
     capacity,
     growAt: calc_grow_threshold(capacity),
@@ -100,6 +106,9 @@ pub fn add[K : Hash + Eq](self : T[K], key : K) -> Unit {
   // 在哈希表中记录
   self.insert_into_table(hash, bucket_idx)
 
+  // 更新位置到索引的映射
+  self.core.position_to_idx.push(bucket_idx)
+
   // 更新大小
   self.size += 1
 }
@@ -111,18 +120,11 @@ pub fn get_at[K](self : T[K], index : Int) -> K? {
     return None
   }
 
-  // 从头节点开始遍历
-  let mut current = self.core.head
-  let mut current_index = 0
-  while current != -1 && current_index < index {
-    current = self.core.entries[current].next
-    current_index += 1
-  }
-  if current == -1 {
-    None
-  } else {
-    Some(self.core.entries[current].key)
-  }
+  // 直接从位置映射获取索引
+  let bucket_idx = self.core.position_to_idx[index]
+
+  // 返回对应的元素
+  Some(self.core.entries[bucket_idx].key)
 }
 
 ///|
@@ -191,6 +193,19 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
       let entry = self.core.entries[idx]
       let hash = entry.hash
 
+      // 找到元素在position_to_idx中的位置
+      let mut position = -1
+      for i in 0..<self.size {
+        if self.core.position_to_idx[i] == idx {
+          position = i
+          break
+        }
+      }
+      if position == -1 {
+        // 应该不会发生，防御性编程
+        return
+      }
+
       // 从哈希表中移除
       self.core.hash_to_idx.remove(hash)
 
@@ -213,6 +228,13 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
 
       // 从映射中移除被删除的键
       self.key_to_idx.remove(key)
+
+      // 更新位置到索引的映射
+      // 移除当前位置的元素并将后面的元素前移
+      for i in position..<(self.size - 1) {
+        self.core.position_to_idx[i] = self.core.position_to_idx[i + 1]
+      }
+      ignore(self.core.position_to_idx.pop())
 
       // 更新大小
       self.size -= 1
@@ -264,6 +286,7 @@ pub fn clear[K](self : T[K]) -> Unit {
   self.core.entries = []
   self.core.head = -1
   self.core.tail = -1
+  self.core.position_to_idx = [] // 清空位置映射
   self.size = 0
   self.key_to_idx = @hashmap.new()
 }
@@ -354,6 +377,7 @@ fn insert_into_table[K : Hash](
 }
 
 ///|
+///|
 fn grow[K : Hash + Eq](self : T[K]) -> Unit {
   // 保存旧数据
   let old_entries = self.core.entries
@@ -366,6 +390,7 @@ fn grow[K : Hash + Eq](self : T[K]) -> Unit {
   self.core.entries = []
   self.core.head = -1
   self.core.tail = -1
+  self.core.position_to_idx = [] // 重置位置映射
   self.size = 0
   self.key_to_idx = @hashmap.new()
 
@@ -376,25 +401,6 @@ fn grow[K : Hash + Eq](self : T[K]) -> Unit {
     self.add(entry.key)
     current = entry.next
   }
-}
-
-///|
-fn index[K](self : T[K], hash : Int) -> Int {
-  abs(hash) & (self.capacity - 1)
-}
-
-///|
-fn abs(n : Int) -> Int {
-  if n < 0 {
-    -n
-  } else {
-    n
-  }
-}
-
-///|
-fn next_index[K](self : T[K], index : Int) -> Int {
-  (index + 1) & (self.capacity - 1)
 }
 
 ///|
@@ -410,8 +416,6 @@ pub impl[K : Show] Show for T[K] with output(self, logger) {
 ///|
 /// 移除并返回最后一个插入的元素（尾部元素）
 /// 如果集合为空，返回 None
-///|
-/// 移除并返回最后一个插入的元素（尾部元素）
 pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
   if self.size == 0 {
     return None
@@ -438,6 +442,9 @@ pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
   // 从映射中移除
   self.key_to_idx.remove(key)
 
+  // 从位置映射中移除最后一个元素
+  ignore(self.core.position_to_idx.pop())
+
   // 更新大小
   self.size -= 1
 
@@ -445,6 +452,8 @@ pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
   Some(key)
 }
 
+///|
+/// 移除并返回第一个插入的元素（头部元素）
 ///|
 /// 移除并返回第一个插入的元素（头部元素）
 pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
@@ -472,6 +481,13 @@ pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
 
   // 从映射中移除
   self.key_to_idx.remove(key)
+
+  // 更新位置到索引的映射
+  // 移除第一个位置的元素并将后面的元素前移
+  for i in 0..<(self.size - 1) {
+    self.core.position_to_idx[i] = self.core.position_to_idx[i + 1]
+  }
+  let temp = self.core.position_to_idx.pop()
 
   // 更新大小
   self.size -= 1
@@ -555,6 +571,9 @@ pub fn sorted_by[K : Hash + Eq, B : Compare](
 ///|
 /// 就地排序集合元素
 /// 时间复杂度: O(n log n)，其中n是集合大小
+///|
+/// 就地排序集合元素
+/// 时间复杂度: O(n log n)，其中n是集合大小
 pub fn sort[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
   if self.size <= 1 {
     return
@@ -573,6 +592,8 @@ pub fn sort[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
   for i in 0..<arr.length() {
     self.add(arr[i])
   }
+
+  // position_to_idx 已经在 add 中更新
 }
 
 ///|
