@@ -214,7 +214,9 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
       // 更新大小
       self.size -= 1
     }
-    None => ignore(None) // 键不存在，不执行任何操作
+    None => {
+      return 
+    } // 键不存在，不执行任何操作
   }
 }
 
@@ -462,7 +464,7 @@ pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
   for i in 0..<(self.size - 1) {
     self.core.position_to_idx[i] = self.core.position_to_idx[i + 1]
   }
-  let temp = self.core.position_to_idx.pop()
+  ignore(self.core.position_to_idx.pop())
 
   // 更新大小
   self.size -= 1
