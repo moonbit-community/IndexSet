@@ -20,12 +20,7 @@ let default_init_capacity = 8
 /// Create new indexed hash set.
 pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
   {
-    core: {
-      hash_to_idx: @hashmap.new(), // 使用HashMap代替FixedArray
-      entries: [],
-      head: -1,
-      tail: -1,
-    },
+    core: { hash_to_idx: @hashmap.new(), entries: [], head: -1, tail: -1 },
     size: 0,
     capacity,
     growAt: calc_grow_threshold(capacity),
@@ -369,6 +364,9 @@ pub fn from_iter[K : Hash + Eq](iter : Iter[K]) -> T[K] {
 ///|
 /// Convert set to array, preserving insertion order.
 pub fn to_array[K](self : T[K]) -> Array[K] {
+  if self.size == 0 || self.core.head == -1 {
+    return []
+  }
   let result = Array::make(self.size, self.core.entries[self.core.head].key)
   let mut current = self.core.head
   let mut index = 0
@@ -381,10 +379,6 @@ pub fn to_array[K](self : T[K]) -> Array[K] {
 }
 
 ///|
-/// Private helper methods
-///|
-
-///|
 /// Insert an entry into the hash table
 fn insert_into_table[K : Hash](
   self : T[K],
@@ -395,9 +389,6 @@ fn insert_into_table[K : Hash](
   self.core.hash_to_idx.set(hash, bucket_idx)
 }
 
-///|
-
-///|
 ///|
 fn grow[K : Hash + Eq](self : T[K]) -> Unit {
   // 保存旧数据
@@ -449,7 +440,7 @@ fn calc_grow_threshold(capacity : Int) -> Int {
 
 ///|
 pub impl[K : Show] Show for T[K] with output(self, logger) {
-  logger.write_iter(self.iter(), prefix="@indexset.of([", suffix="])")
+  logger.write_iter(self.iter(), prefix="@IndexSet.of([", suffix="])")
 }
 
 ///|
@@ -523,4 +514,139 @@ pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
 
   // 返回移除的元素
   Some(key)
+}
+
+///| 返回集合中第一个插入的元素，但不移除它
+/// 如果集合为空，返回 None
+pub fn peek_first[K](self : T[K]) -> K? {
+  if self.size == 0 || self.core.head == -1 {
+    return None
+  }
+
+  // 获取头部元素
+  let head_idx = self.core.head
+  let head_element = self.core.entries[head_idx]
+
+  // 返回元素，但不修改集合
+  Some(head_element.key)
+}
+
+///| 返回集合中最后一个插入的元素，但不移除它
+/// 如果集合为空，返回 None
+pub fn peek_last[K](self : T[K]) -> K? {
+  if self.size == 0 || self.core.tail == -1 {
+    return None
+  }
+
+  // 获取尾部元素
+  let tail_idx = self.core.tail
+  let tail_element = self.core.entries[tail_idx]
+
+  // 返回元素，但不修改集合
+  Some(tail_element.key)
+}
+
+///|
+pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X] with arbitrary(
+  size,
+  rs
+) {
+  @quickcheck.Arbitrary::arbitrary(size, rs) |> from_iter
+}
+
+///| 返回一个按照指定比较函数排序的新集合
+/// 原集合不会被修改
+pub fn sorted[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> T[K] {
+  // 将集合转换为数组
+  let arr = self.to_array()
+
+  // 对数组进行排序
+  arr.sort_by(compare)
+
+  // 创建新的有序集合
+  from_array(arr)
+}
+
+///|
+pub fn sorted_by_key[K : Hash + Eq + Compare](self : T[K]) -> T[K] {
+  self.sorted(fn(a, b) { a.compare(b) })
+}
+
+///| 返回一个按照键映射函数排序的新集合
+/// 原集合不会被修改
+pub fn sorted_by[K : Hash + Eq, B : Compare](
+  self : T[K],
+  key_fn : (K) -> B
+) -> T[K] {
+  // 将集合转换为数组
+  let arr = self.to_array()
+
+  // 对数组进行排序
+  arr.sort_by(fn(a, b) { key_fn(a).compare(key_fn(b)) })
+
+  // 创建新的有序集合
+  from_array(arr)
+}
+
+///|
+/// 就地排序集合元素
+/// 时间复杂度: O(n log n)，其中n是集合大小
+pub fn sort[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
+  if self.size <= 1 {
+    return
+  }
+
+  // 将集合转换为数组
+  let arr = self.to_array()
+
+  // 对数组进行排序
+  arr.sort_by(compare)
+
+  // 清空当前集合
+  self.clear()
+
+  // 重新添加排序后的元素
+  for i in 0..<arr.length() {
+    self.add(arr[i])
+  }
+}
+
+///|
+/// 就地按照自然顺序排序集合
+/// 要求元素类型实现了 Compare trait
+pub fn sort_by_key[K : Hash + Eq + Compare](self : T[K]) -> Unit {
+  self.sort(fn(a, b) { a.compare(b) })
+}
+
+///|
+/// 就地按照键映射函数排序集合
+pub fn sort_by[K : Hash + Eq, B : Compare](
+  self : T[K],
+  key_fn : (K) -> B
+) -> Unit {
+  self.sort(fn(a, b) { key_fn(a).compare(key_fn(b)) })
+}
+
+///|
+/// 返回一个按照指定比较函数反向排序的新集合
+pub fn sorted_desc[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> T[K] {
+  self.sorted(fn(a, b) { compare(b, a) })
+}
+
+///|
+/// 返回一个按照自然顺序反向排序的新集合
+pub fn sorted_by_key_desc[K : Hash + Eq + Compare](self : T[K]) -> T[K] {
+  self.sorted(fn(a, b) { b.compare(a) })
+}
+
+///|
+/// 就地按照指定比较函数反向排序集合
+pub fn sort_desc[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
+  self.sort(fn(a, b) { compare(b, a) })
+}
+
+///|
+/// 就地按照自然顺序反向排序集合
+pub fn sort_by_key_desc[K : Hash + Eq + Compare](self : T[K]) -> Unit {
+  self.sort(fn(a, b) { b.compare(a) })
 }
