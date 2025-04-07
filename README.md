@@ -21,7 +21,7 @@ Similar to Rust's `IndexSet`, this is an implementation of a data structure that
 
 ## 📥 Installation
 ```bash
-moon add kesmeey/indexset
+moon add kesmeey/IndexSet
 ```
 
 ## 🚀 Usage Guide

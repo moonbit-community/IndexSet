@@ -20,7 +20,7 @@
 
 ## 📥 安装方式
 ```bash
-moon add kesmeey/indexset
+moon add kesmeey/IndexSet
 ```
 
 ## 🚀 使用指南
