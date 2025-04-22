@@ -281,11 +281,11 @@ test "IndexSet arbitrary" {
   let samples : Array[@IndexSet.T[Int]] = @quickcheck.samples(20)
   inspect!(
     samples[5:10],
-    content="[@IndexSet.of([0]), @IndexSet.of([0]), @IndexSet.of([0]), @IndexSet.of([0]), @IndexSet.of([0, 3])]",
+    content="[@IndexSet.of([]), @IndexSet.of([]), @IndexSet.of([0]), @IndexSet.of([0]), @IndexSet.of([0, 2, 3, 1])]",
   )
   inspect!(
     samples[11:15],
-    content="[@IndexSet.of([0, 1]), @IndexSet.of([0, -1, 4]), @IndexSet.of([0]), @IndexSet.of([0, -1, 2])]",
+    content="[@IndexSet.of([0, -1, -2]), @IndexSet.of([0, -2, -5, 4, 8]), @IndexSet.of([0, -1, 2]), @IndexSet.of([0])]",
   )
 }
 
