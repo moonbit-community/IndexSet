@@ -455,6 +455,27 @@ test "sort_by_key" {
 }
 
 ///|
+test "sort_only_one" {
+  let set = @IndexSet.of([5])
+  set.sort(fn(a, b) { a - b })
+
+  // 集合已排序
+  assert_eq!(set.to_array(), [5])
+  let set2 = @IndexSet.of([5])
+  set.sort(fn(a, b) { b - a })
+  assert_eq!(set2.to_array(), [5])
+}
+
+///|
+test "sort_by_key" {
+  let set = @IndexSet.of([5, 2, 4, 1, 3])
+  set.sort_by_key()
+
+  // 集合已按自然顺序排序
+  assert_eq!(set.to_array(), [1, 2, 3, 4, 5])
+}
+
+///|
 test "sort_by" {
   // 创建一个字符串集合
   let set = @IndexSet.of(["apple", "banana", "kiwi", "orange", "grape"])
@@ -558,4 +579,33 @@ test "index_of basic functionality" {
   // 测试不存在的元素
   assert_eq!(set.index_of("fig"), None)
   assert_eq!(set.index_of("grape"), None)
+}
+
+///|
+/// 测试移除不存在的键
+test "remove_nonexistent_key" {
+  // 创建一个新的集合并添加一些元素
+  let set = @IndexSet.new()
+  set.add("key1")
+  set.add("key2")
+  set.add("key3")
+
+  // 记录初始状态
+  let initial_size = set.size()
+  let initial_elements = set.to_array()
+
+  // 尝试移除一个不存在的键
+  set.remove("nonexistent_key")
+
+  // 验证集合状态未改变
+  assert_eq!(set.size(), initial_size)
+  assert_eq!(set.to_array(), initial_elements)
+
+  // 确认原有元素仍然存在
+  assert_true!(set.contains("key1"))
+  assert_true!(set.contains("key2"))
+  assert_true!(set.contains("key3"))
+
+  // 确认不存在的键仍然不存在
+  assert_false!(set.contains("nonexistent_key"))
 }
