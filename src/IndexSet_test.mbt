@@ -73,7 +73,7 @@ test "is_empty" {
   m.add("a")
   assert_eq!(m.is_empty(), false)
   m.remove("a")
-  m.remove("a")
+  m.remove("ccd")
   assert_eq!(m.is_empty(), true)
 }
 

@@ -137,13 +137,9 @@ pub fn get_at[K](self : T[K], index : Int) -> K? {
 /// Get the index of a key
 pub fn index_of[K : Hash + Eq](self : T[K], key : K) -> Int? {
   // 先检查键是否存在
+  // 从桶索引到位置的映射获取位置索引
   match self.key_to_idx.get(key) {
-    Some(bucket_idx) =>
-      // 从桶索引到位置的映射获取位置索引
-      match self.core.idx_to_position.get(bucket_idx) {
-        Some(position) => Some(position)
-        None => None // 理论上不应该发生
-      }
+    Some(bucket_idx) => Some(self.core.idx_to_position.get(bucket_idx).unwrap())
     None => None // 键不存在
   }
 }
@@ -174,11 +170,8 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
       let entry = self.core.entries[idx]
       let hash = entry.hash
 
-      // 从索引到位置的映射中获取位置
-      let position = match self.core.idx_to_position.get(idx) {
-        Some(pos) => pos
-        None => return // 应该不会发生，防御性编程
-      }
+      // 从索引到位置的映射中获取位置（idx是从key_to_idx获取的有效索引）
+      let position = self.core.idx_to_position.get(idx).unwrap()
 
       // 如果要删除的不是最后一个元素，则进行交换
       if position < self.size - 1 {
