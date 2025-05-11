@@ -3,7 +3,7 @@
 
 [English](https://github.com/moonbit-community/IndexSet/blob/master/README.md) | [简体中文](https://github.com/moonbit-community/IndexSet/blob/master/README_zh_CN.md)
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/moonbit-community/IndexSet/ci.yml)](https://github.com/moonbit-community/IndexSet/actions)  [![License](https://img.shields.io/github/license/moonbit-community/IndexSet)](LICENSE)  [![codecov](https://codecov.io/gh/moonbit-community/IndexSet/branch/main/graph/badge.svg)](https://codecov.io/gh/moonbit-community/IndexSet)  
+[![Build Status](https://img.shields.io/github/actions/workflow/status/moonbit-community/IndexSet/ci.yml)](https://github.com/moonbit-community/IndexSet/actions)  [![License](https://img.shields.io/github/license/moonbit-community/IndexSet)](LICENSE)  [![codecov](https://codecov.io/gh/moonbit-community/IndexSet/branch/master/graph/badge.svg)](https://codecov.io/gh/moonbit-community/IndexSet)  
 
 Similar to Rust's `IndexSet`, this is an implementation of a data structure that is compatible with all operations in MoonBit's core `hashset` library.
 
