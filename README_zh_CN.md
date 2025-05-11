@@ -2,7 +2,7 @@
 
 [English](https://github.com/moonbit-community/IndexSet/blob/master/README.md) | [简体中文](https://github.com/moonbit-community/IndexSet/blob/master/README_zh_CN.md)
 
-[![构建状态](https://img.shields.io/github/actions/workflow/status/moonbit-community/unicodeUtil/ci.yml)](https://github.com/moonbit-community/IndexSet/actions)  [![许可证](https://img.shields.io/github/license/moonbit-community/unicodeUtil)](LICENSE)  [![代码覆盖率](https://codecov.io/gh/moonbit-community/NyaSearch/branch/main/graph/badge.svg)](https://codecov.io/gh/moonbit-community/IndexSet)  
+[![构建状态](https://img.shields.io/github/actions/workflow/status/moonbit-community/IndexSet/ci.yml)](https://github.com/moonbit-community/IndexSet/actions)  [![许可证](https://img.shields.io/github/license/moonbit-community/IndexSet)](LICENSE)  [![代码覆盖率](https://codecov.io/gh/moonbit-community/IndexSet/branch/main/graph/badge.svg)](https://codecov.io/gh/moonbit-community/IndexSet)  
 
 类似于Rust中的`IndexSet`，这是一个与MoonBit核心`hashset`库所有操作兼容的数据结构实现。
 
