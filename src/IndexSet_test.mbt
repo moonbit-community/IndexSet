@@ -292,14 +292,14 @@ test "IndexSet arbitrary" {
 ///|
 test "@IndexSet.to_array/empty" {
   let set : @IndexSet.T[Int] = @IndexSet.new()
-  inspect(@IndexSet.to_array(set), content="[]")
+  inspect(set.to_array(), content="[]")
 }
 
 ///|
 test "@IndexSet.to_array/single" {
   let set = @IndexSet.new()
   set.add(42)
-  inspect(@IndexSet.to_array(set), content="[42]")
+  inspect(set.to_array(), content="[42]")
 }
 
 ///|
@@ -309,7 +309,7 @@ test "@IndexSet.to_array/multiple" {
   set.add(2)
   set.add(3)
   set.add(4)
-  inspect(@IndexSet.to_array(set), content="[1, 2, 3, 4]")
+  inspect(set.to_array(), content="[1, 2, 3, 4]")
 }
 
 ///|
@@ -545,7 +545,7 @@ test "get_at basic functionality" {
   for i in 0..<set.size() {
     match set.get_at(i) {
       Some(v) => values.push(v)
-      None => ignore(None) // 不应发生
+      None => () // 不应发生
     }
   }
   assert_eq(values, [10, 20, 30, 40, 50])
@@ -561,7 +561,7 @@ test "get_at boundary cases" {
   assert_eq(set.get_at(100), None) // 远超越界索引
 
   // 空集合测试
-  let empty_set = @IndexSet.new()
+  let empty_set : @IndexSet.T[String] = @IndexSet.new()
   assert_eq(empty_set.get_at(0), None) // 空集合任何索引都返回None
 }
 

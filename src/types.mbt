@@ -11,7 +11,7 @@ priv struct Bucket[K] {
   key : K // 键
   mut next : Int // 链表后继索引，-1表示没有后继
   mut prev : Int // 链表前驱索引，-1表示没有前驱
-} derive(Show)
+}
 
 /// A mutable indexed hash set implements with Robin Hood hashing.
 ///
@@ -28,7 +28,7 @@ priv struct IndexSetCore[K] {
   mut tail : Int // 链表尾节点索引，-1表示空链表
   mut position_to_idx : Array[Int] // 新增：位置到桶索引的映射
   mut idx_to_position : @hashmap.T[Int, Int] // 新增：桶索引到位置的映射
-} derive(Show)
+}
 
 ///|
 /// Mutable indexed hash set, not thread safe.
@@ -37,10 +37,10 @@ priv struct IndexSetCore[K] {
 /// # Example
 ///
 /// ```
-/// let set = @indexset.of([3, 8, 1])
+/// let set = @IndexSet.of([3, 8, 1])
 /// set.add(4)
-/// assert_eq!(set.contains(4), true)
-/// assert_eq!(set.get_at(3), 4)  // Access by index
+/// assert_eq(set.contains(4), true)
+/// assert_eq(set.get_at(3), Some(4))  // Access by index
 /// ```
 struct T[K] {
   core : IndexSetCore[K] // 包含核心数据结构

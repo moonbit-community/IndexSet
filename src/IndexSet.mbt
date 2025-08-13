@@ -346,11 +346,7 @@ pub fn[K] to_array(self : T[K]) -> Array[K] {
 
 ///|
 /// Insert an entry into the hash table
-fn[K : Hash] insert_into_table(
-  self : T[K],
-  hash : Int,
-  bucket_idx : Int,
-) -> Unit {
+fn[K] insert_into_table(self : T[K], hash : Int, bucket_idx : Int) -> Unit {
   // 直接在哈希表中设置键值对，无需线性探测
   self.core.hash_to_idx.set(hash, bucket_idx)
 }
