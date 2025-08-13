@@ -18,9 +18,10 @@ let default_init_capacity = 8
 
 ///|
 /// Create new indexed hash set.
+
 ///|
 /// Create new indexed hash set.
-pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
+pub fn[K] new(capacity~ : Int = default_init_capacity) -> T[K] {
   {
     core: {
       hash_to_idx: @hashmap.new(),
@@ -39,14 +40,14 @@ pub fn new[K](capacity~ : Int = default_init_capacity) -> T[K] {
 
 ///|
 /// Create new indexed hash set from array.
-pub fn from_array[K : Hash + Eq](arr : Array[K]) -> T[K] {
+pub fn[K : Hash + Eq] from_array(arr : Array[K]) -> T[K] {
   let set = new()
   arr.each(fn(e) { set.add(e) })
   set
 }
 
 ///|
-pub fn of[K : Hash + Eq](arr : FixedArray[K]) -> T[K] {
+pub fn[K : Hash + Eq] of(arr : FixedArray[K]) -> T[K] {
   let set = new()
   arr.each(fn(e) { set.add(e) })
   set
@@ -57,13 +58,13 @@ pub fn of[K : Hash + Eq](arr : FixedArray[K]) -> T[K] {
 /// @alert unsafe "Panic if the hash set is full."
 #deprecated("Use `add` instead.")
 #coverage.skip
-pub fn insert[K : Hash + Eq](self : T[K], key : K) -> Unit {
+pub fn[K : Hash + Eq] insert(self : T[K], key : K) -> Unit {
   self.add(key)
 }
 
 ///|
 /// Add a key to the hash set.
-pub fn add[K : Hash + Eq](self : T[K], key : K) -> Unit {
+pub fn[K : Hash + Eq] add(self : T[K], key : K) -> Unit {
   // 检查是否需要扩容
   if self.capacity == 0 || self.size >= self.growAt {
     self.grow()
@@ -121,7 +122,7 @@ pub fn add[K : Hash + Eq](self : T[K], key : K) -> Unit {
 
 ///|
 /// Get element at specific index
-pub fn get_at[K](self : T[K], index : Int) -> K? {
+pub fn[K] get_at(self : T[K], index : Int) -> K? {
   if index < 0 || index >= self.size {
     return None
   }
@@ -135,7 +136,7 @@ pub fn get_at[K](self : T[K], index : Int) -> K? {
 
 ///|
 /// Get the index of a key
-pub fn index_of[K : Hash + Eq](self : T[K], key : K) -> Int? {
+pub fn[K : Hash + Eq] index_of(self : T[K], key : K) -> Int? {
   // 先检查键是否存在
   // 从桶索引到位置的映射获取位置索引
   match self.key_to_idx.get(key) {
@@ -146,7 +147,7 @@ pub fn index_of[K : Hash + Eq](self : T[K], key : K) -> Int? {
 
 ///|
 /// Check if the hash set contains a key.
-pub fn contains[K : Hash + Eq](self : T[K], key : K) -> Bool {
+pub fn[K : Hash + Eq] contains(self : T[K], key : K) -> Bool {
   if self.size == 0 {
     return false
   }
@@ -158,7 +159,7 @@ pub fn contains[K : Hash + Eq](self : T[K], key : K) -> Bool {
 ///|
 
 ///| Remove a key from hash set with O(1) complexity.
-pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
+pub fn[K : Hash + Eq] remove(self : T[K], key : K) -> Unit {
   if self.size == 0 {
     return
   }
@@ -222,31 +223,31 @@ pub fn remove[K : Hash + Eq](self : T[K], key : K) -> Unit {
 
 ///|
 /// Get the number of keys in the set.
-pub fn size[K](self : T[K]) -> Int {
+pub fn[K] size(self : T[K]) -> Int {
   self.size
 }
 
 ///|
 /// Get the capacity of the set.
-pub fn capacity[K](self : T[K]) -> Int {
+pub fn[K] capacity(self : T[K]) -> Int {
   self.capacity
 }
 
 ///|
 /// Check if the hash set is empty.
-pub fn is_empty[K](self : T[K]) -> Bool {
+pub fn[K] is_empty(self : T[K]) -> Bool {
   self.size == 0
 }
 
 ///|
 /// Iterate over all keys of the set.
-pub fn each[K](self : T[K], f : (K) -> Unit) -> Unit {
+pub fn[K] each(self : T[K], f : (K) -> Unit) -> Unit {
   self.eachi(fn(_i, k) { f(k) })
 }
 
 ///|
 /// Iterate over all keys of the set, with index.
-pub fn eachi[K](self : T[K], f : (Int, K) -> Unit) -> Unit {
+pub fn[K] eachi(self : T[K], f : (Int, K) -> Unit) -> Unit {
   let mut current = self.core.head
   let mut index = 0
   while current != -1 {
@@ -258,7 +259,7 @@ pub fn eachi[K](self : T[K], f : (Int, K) -> Unit) -> Unit {
 
 ///|
 /// Clears the set, removing all keys. Keeps the allocated space.
-pub fn clear[K](self : T[K]) -> Unit {
+pub fn[K] clear(self : T[K]) -> Unit {
   self.core.hash_to_idx = @hashmap.new() // 重置为新的哈希表
   self.core.entries = []
   self.core.head = -1
@@ -272,7 +273,7 @@ pub fn clear[K](self : T[K]) -> Unit {
 ///|
 /// Union of two hash sets.
 /// @alert unsafe "Panic if the hash set is full."
-pub fn union[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
+pub fn[K : Hash + Eq] union(self : T[K], other : T[K]) -> T[K] {
   let result = new()
   self.each(fn(k) { result.add(k) })
   other.each(fn(k) { result.add(k) })
@@ -281,7 +282,7 @@ pub fn union[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
 
 ///|
 /// Intersection of two hash sets.
-pub fn intersection[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
+pub fn[K : Hash + Eq] intersection(self : T[K], other : T[K]) -> T[K] {
   let result = new()
   self.each(fn(k) { if other.contains(k) { result.add(k) } })
   result
@@ -289,7 +290,7 @@ pub fn intersection[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
 
 ///|
 /// Difference of two hash sets.
-pub fn difference[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
+pub fn[K : Hash + Eq] difference(self : T[K], other : T[K]) -> T[K] {
   let result = new()
   self.each(fn(k) { if not(other.contains(k)) { result.add(k) } })
   result
@@ -297,7 +298,7 @@ pub fn difference[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
 
 ///|
 /// Symmetric difference of two hash sets.
-pub fn symmetric_difference[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
+pub fn[K : Hash + Eq] symmetric_difference(self : T[K], other : T[K]) -> T[K] {
   let result = new()
   self.each(fn(k) { if not(other.contains(k)) { result.add(k) } })
   other.each(fn(k) { if not(self.contains(k)) { result.add(k) } })
@@ -305,7 +306,7 @@ pub fn symmetric_difference[K : Hash + Eq](self : T[K], other : T[K]) -> T[K] {
 }
 
 ///|
-pub fn iter[K](self : T[K]) -> Iter[K] {
+pub fn[K] iter(self : T[K]) -> Iter[K] {
   Iter::new(fn(yield_) {
     let mut current = self.core.head
     while current != -1 {
@@ -320,7 +321,7 @@ pub fn iter[K](self : T[K]) -> Iter[K] {
 }
 
 ///|
-pub fn from_iter[K : Hash + Eq](iter : Iter[K]) -> T[K] {
+pub fn[K : Hash + Eq] from_iter(iter : Iter[K]) -> T[K] {
   let s = new()
   iter.each(fn(e) { s.add(e) })
   s
@@ -328,7 +329,7 @@ pub fn from_iter[K : Hash + Eq](iter : Iter[K]) -> T[K] {
 
 ///|
 /// Convert set to array, preserving insertion order.
-pub fn to_array[K](self : T[K]) -> Array[K] {
+pub fn[K] to_array(self : T[K]) -> Array[K] {
   if self.size == 0 || self.core.head == -1 {
     return []
   }
@@ -345,19 +346,21 @@ pub fn to_array[K](self : T[K]) -> Array[K] {
 
 ///|
 /// Insert an entry into the hash table
-fn insert_into_table[K : Hash](
+fn[K : Hash] insert_into_table(
   self : T[K],
   hash : Int,
-  bucket_idx : Int
+  bucket_idx : Int,
 ) -> Unit {
   // 直接在哈希表中设置键值对，无需线性探测
   self.core.hash_to_idx.set(hash, bucket_idx)
 }
 
 ///|
+
 ///|
+
 ///|
-fn grow[K : Hash + Eq](self : T[K]) -> Unit {
+fn[K : Hash + Eq] grow(self : T[K]) -> Unit {
   // 保存旧数据
   let old_entries = self.core.entries
   let old_head = self.core.head
@@ -396,7 +399,7 @@ pub impl[K : Show] Show for T[K] with output(self, logger) {
 ///|
 /// 移除并返回最后一个插入的元素（尾部元素）
 /// 如果集合为空，返回 None
-pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
+pub fn[K : Hash + Eq] pop(self : T[K]) -> K? {
   if self.size == 0 {
     return None
   }
@@ -438,7 +441,7 @@ pub fn pop[K : Hash + Eq](self : T[K]) -> K? {
 ///|
 /// 移除并返回第一个插入的元素（头部元素）
 /// 时间复杂度：O(1)
-pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
+pub fn[K : Hash + Eq] shift(self : T[K]) -> K? {
   if self.size == 0 {
     return None
   }
@@ -489,7 +492,7 @@ pub fn shift[K : Hash + Eq](self : T[K]) -> K? {
 
 ///| 返回集合中第一个插入的元素，但不移除它
 /// 如果集合为空，返回 None
-pub fn peek_first[K](self : T[K]) -> K? {
+pub fn[K] peek_first(self : T[K]) -> K? {
   if self.size == 0 || self.core.head == -1 {
     return None
   }
@@ -504,7 +507,7 @@ pub fn peek_first[K](self : T[K]) -> K? {
 
 ///| 返回集合中最后一个插入的元素，但不移除它
 /// 如果集合为空，返回 None
-pub fn peek_last[K](self : T[K]) -> K? {
+pub fn[K] peek_last(self : T[K]) -> K? {
   if self.size == 0 || self.core.tail == -1 {
     return None
   }
@@ -520,14 +523,14 @@ pub fn peek_last[K](self : T[K]) -> K? {
 ///|
 pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X] with arbitrary(
   size,
-  rs
+  rs,
 ) {
   @quickcheck.Arbitrary::arbitrary(size, rs) |> from_iter
 }
 
 ///| 返回一个按照指定比较函数排序的新集合
 /// 原集合不会被修改
-pub fn sorted[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> T[K] {
+pub fn[K : Hash + Eq] sorted(self : T[K], compare : (K, K) -> Int) -> T[K] {
   // 将集合转换为数组
   let arr = self.to_array()
 
@@ -539,15 +542,15 @@ pub fn sorted[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> T[K] {
 }
 
 ///|
-pub fn sorted_by_key[K : Hash + Eq + Compare](self : T[K]) -> T[K] {
+pub fn[K : Hash + Eq + Compare] sorted_by_key(self : T[K]) -> T[K] {
   self.sorted(fn(a, b) { a.compare(b) })
 }
 
 ///| 返回一个按照键映射函数排序的新集合
 /// 原集合不会被修改
-pub fn sorted_by[K : Hash + Eq, B : Compare](
+pub fn[K : Hash + Eq, B : Compare] sorted_by(
   self : T[K],
-  key_fn : (K) -> B
+  key_fn : (K) -> B,
 ) -> T[K] {
   // 将集合转换为数组
   let arr = self.to_array()
@@ -562,7 +565,7 @@ pub fn sorted_by[K : Hash + Eq, B : Compare](
 ///|
 /// 就地排序集合元素
 /// 时间复杂度: O(n log n)，其中n是集合大小
-pub fn sort[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
+pub fn[K : Hash + Eq] sort(self : T[K], compare : (K, K) -> Int) -> Unit {
   if self.size <= 1 {
     return
   }
@@ -587,39 +590,39 @@ pub fn sort[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
 ///|
 /// 就地按照自然顺序排序集合
 /// 要求元素类型实现了 Compare trait
-pub fn sort_by_key[K : Hash + Eq + Compare](self : T[K]) -> Unit {
+pub fn[K : Hash + Eq + Compare] sort_by_key(self : T[K]) -> Unit {
   self.sort(fn(a, b) { a.compare(b) })
 }
 
 ///|
 /// 就地按照键映射函数排序集合
-pub fn sort_by[K : Hash + Eq, B : Compare](
+pub fn[K : Hash + Eq, B : Compare] sort_by(
   self : T[K],
-  key_fn : (K) -> B
+  key_fn : (K) -> B,
 ) -> Unit {
   self.sort(fn(a, b) { key_fn(a).compare(key_fn(b)) })
 }
 
 ///|
 /// 返回一个按照指定比较函数反向排序的新集合
-pub fn sorted_desc[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> T[K] {
+pub fn[K : Hash + Eq] sorted_desc(self : T[K], compare : (K, K) -> Int) -> T[K] {
   self.sorted(fn(a, b) { compare(b, a) })
 }
 
 ///|
 /// 返回一个按照自然顺序反向排序的新集合
-pub fn sorted_by_key_desc[K : Hash + Eq + Compare](self : T[K]) -> T[K] {
+pub fn[K : Hash + Eq + Compare] sorted_by_key_desc(self : T[K]) -> T[K] {
   self.sorted(fn(a, b) { b.compare(a) })
 }
 
 ///|
 /// 就地按照指定比较函数反向排序集合
-pub fn sort_desc[K : Hash + Eq](self : T[K], compare : (K, K) -> Int) -> Unit {
+pub fn[K : Hash + Eq] sort_desc(self : T[K], compare : (K, K) -> Int) -> Unit {
   self.sort(fn(a, b) { compare(b, a) })
 }
 
 ///|
 /// 就地按照自然顺序反向排序集合
-pub fn sort_by_key_desc[K : Hash + Eq + Compare](self : T[K]) -> Unit {
+pub fn[K : Hash + Eq + Compare] sort_by_key_desc(self : T[K]) -> Unit {
   self.sort(fn(a, b) { b.compare(a) })
 }
