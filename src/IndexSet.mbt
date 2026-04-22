@@ -292,7 +292,7 @@ pub fn[K : Hash + Eq] T::intersection(self : T[K], other : T[K]) -> T[K] {
 /// Difference of two hash sets.
 pub fn[K : Hash + Eq] T::difference(self : T[K], other : T[K]) -> T[K] {
   let result = new()
-  self.each(fn(k) { if not(other.contains(k)) { result.add(k) } })
+  self.each(fn(k) { if !other.contains(k) { result.add(k) } })
   result
 }
 
@@ -300,8 +300,8 @@ pub fn[K : Hash + Eq] T::difference(self : T[K], other : T[K]) -> T[K] {
 /// Symmetric difference of two hash sets.
 pub fn[K : Hash + Eq] T::symmetric_difference(self : T[K], other : T[K]) -> T[K] {
   let result = new()
-  self.each(fn(k) { if not(other.contains(k)) { result.add(k) } })
-  other.each(fn(k) { if not(self.contains(k)) { result.add(k) } })
+  self.each(fn(k) { if !other.contains(k) { result.add(k) } })
+  other.each(fn(k) { if !self.contains(k) { result.add(k) } })
   result
 }
 
