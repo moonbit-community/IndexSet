@@ -307,16 +307,15 @@ pub fn[K : Hash + Eq] symmetric_difference(self : T[K], other : T[K]) -> T[K] {
 
 ///|
 pub fn[K] iter(self : T[K]) -> Iter[K] {
-  Iter::new(fn(yield_) {
-    let mut current = self.core.head
-    while current != -1 {
+  let mut current = self.core.head
+  Iter::new(fn() {
+    if current == -1 {
+      None
+    } else {
       let key = self.core.entries[current].key
-      if yield_(key) == IterEnd {
-        break
-      }
       current = self.core.entries[current].next
+      Some(key)
     }
-    IterContinue
   })
 }
 
