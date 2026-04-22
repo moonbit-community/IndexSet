@@ -1,0 +1,61 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "kesmeey/IndexSet"
+
+import {
+  "moonbitlang/core/quickcheck",
+  "moonbitlang/core/quickcheck/splitmix",
+}
+
+// Values
+pub fn[K : Hash + Eq] from_array(Array[K]) -> T[K]
+
+pub fn[K : Hash + Eq] from_iter(Iter[K]) -> T[K]
+
+pub fn[K] new(capacity? : Int) -> T[K]
+
+pub fn[K : Hash + Eq] of(FixedArray[K]) -> T[K]
+
+// Errors
+
+// Types and methods
+type T[K]
+pub fn[K : Hash + Eq] T::add(Self[K], K) -> Unit
+pub fn[K] T::capacity(Self[K]) -> Int
+pub fn[K] T::clear(Self[K]) -> Unit
+pub fn[K : Hash + Eq] T::contains(Self[K], K) -> Bool
+pub fn[K : Hash + Eq] T::difference(Self[K], Self[K]) -> Self[K]
+pub fn[K] T::each(Self[K], (K) -> Unit) -> Unit
+pub fn[K] T::eachi(Self[K], (Int, K) -> Unit) -> Unit
+pub fn[K] T::get_at(Self[K], Int) -> K?
+pub fn[K : Hash + Eq] T::index_of(Self[K], K) -> Int?
+#deprecated
+pub fn[K : Hash + Eq] T::insert(Self[K], K) -> Unit
+pub fn[K : Hash + Eq] T::intersection(Self[K], Self[K]) -> Self[K]
+pub fn[K] T::is_empty(Self[K]) -> Bool
+pub fn[K] T::iter(Self[K]) -> Iter[K]
+pub fn[K] T::peek_first(Self[K]) -> K?
+pub fn[K] T::peek_last(Self[K]) -> K?
+pub fn[K : Hash + Eq] T::pop(Self[K]) -> K?
+pub fn[K : Hash + Eq] T::remove(Self[K], K) -> Unit
+pub fn[K : Hash + Eq] T::shift(Self[K]) -> K?
+pub fn[K] T::size(Self[K]) -> Int
+pub fn[K : Hash + Eq] T::sort(Self[K], (K, K) -> Int) -> Unit
+pub fn[K : Hash + Eq, B : Compare] T::sort_by(Self[K], (K) -> B) -> Unit
+pub fn[K : Hash + Eq + Compare] T::sort_by_key(Self[K]) -> Unit
+pub fn[K : Hash + Eq + Compare] T::sort_by_key_desc(Self[K]) -> Unit
+pub fn[K : Hash + Eq] T::sort_desc(Self[K], (K, K) -> Int) -> Unit
+pub fn[K : Hash + Eq] T::sorted(Self[K], (K, K) -> Int) -> Self[K]
+pub fn[K : Hash + Eq, B : Compare] T::sorted_by(Self[K], (K) -> B) -> Self[K]
+pub fn[K : Hash + Eq + Compare] T::sorted_by_key(Self[K]) -> Self[K]
+pub fn[K : Hash + Eq + Compare] T::sorted_by_key_desc(Self[K]) -> Self[K]
+pub fn[K : Hash + Eq] T::sorted_desc(Self[K], (K, K) -> Int) -> Self[K]
+pub fn[K : Hash + Eq] T::symmetric_difference(Self[K], Self[K]) -> Self[K]
+pub fn[K] T::to_array(Self[K]) -> Array[K]
+pub fn[K : Hash + Eq] T::union(Self[K], Self[K]) -> Self[K]
+pub impl[K : Show] Show for T[K]
+pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X]
+
+// Type aliases
+
+// Traits
+
