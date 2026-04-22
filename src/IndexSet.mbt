@@ -21,7 +21,7 @@ let default_init_capacity = 8
 
 ///|
 /// Create new indexed hash set.
-pub fn[K] new(capacity~ : Int = default_init_capacity) -> T[K] {
+pub fn[K] new(capacity? : Int = default_init_capacity) -> T[K] {
   {
     core: {
       hash_to_idx: @hashmap.new(),
@@ -158,7 +158,8 @@ pub fn[K : Hash + Eq] T::contains(self : T[K], key : K) -> Bool {
 
 ///|
 
-///| Remove a key from hash set with O(1) complexity.
+///|
+/// Remove a key from hash set with O(1) complexity.
 pub fn[K : Hash + Eq] T::remove(self : T[K], key : K) -> Unit {
   if self.size == 0 {
     return
@@ -298,7 +299,10 @@ pub fn[K : Hash + Eq] T::difference(self : T[K], other : T[K]) -> T[K] {
 
 ///|
 /// Symmetric difference of two hash sets.
-pub fn[K : Hash + Eq] T::symmetric_difference(self : T[K], other : T[K]) -> T[K] {
+pub fn[K : Hash + Eq] T::symmetric_difference(
+  self : T[K],
+  other : T[K],
+) -> T[K] {
   let result = new()
   self.each(fn(k) { if !other.contains(k) { result.add(k) } })
   other.each(fn(k) { if !self.contains(k) { result.add(k) } })
@@ -485,7 +489,8 @@ pub fn[K : Hash + Eq] T::shift(self : T[K]) -> K? {
   Some(key)
 }
 
-///| 返回集合中第一个插入的元素，但不移除它
+///|
+/// 返回集合中第一个插入的元素，但不移除它
 /// 如果集合为空，返回 None
 pub fn[K] T::peek_first(self : T[K]) -> K? {
   if self.size == 0 || self.core.head == -1 {
@@ -500,7 +505,8 @@ pub fn[K] T::peek_first(self : T[K]) -> K? {
   Some(head_element.key)
 }
 
-///| 返回集合中最后一个插入的元素，但不移除它
+///|
+/// 返回集合中最后一个插入的元素，但不移除它
 /// 如果集合为空，返回 None
 pub fn[K] T::peek_last(self : T[K]) -> K? {
   if self.size == 0 || self.core.tail == -1 {
@@ -523,7 +529,8 @@ pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X] w
   @quickcheck.Arbitrary::arbitrary(size, rs) |> from_iter
 }
 
-///| 返回一个按照指定比较函数排序的新集合
+///|
+/// 返回一个按照指定比较函数排序的新集合
 /// 原集合不会被修改
 pub fn[K : Hash + Eq] T::sorted(self : T[K], compare : (K, K) -> Int) -> T[K] {
   // 将集合转换为数组
@@ -541,7 +548,8 @@ pub fn[K : Hash + Eq + Compare] T::sorted_by_key(self : T[K]) -> T[K] {
   self.sorted(fn(a, b) { a.compare(b) })
 }
 
-///| 返回一个按照键映射函数排序的新集合
+///|
+/// 返回一个按照键映射函数排序的新集合
 /// 原集合不会被修改
 pub fn[K : Hash + Eq, B : Compare] T::sorted_by(
   self : T[K],
@@ -600,7 +608,10 @@ pub fn[K : Hash + Eq, B : Compare] T::sort_by(
 
 ///|
 /// 返回一个按照指定比较函数反向排序的新集合
-pub fn[K : Hash + Eq] T::sorted_desc(self : T[K], compare : (K, K) -> Int) -> T[K] {
+pub fn[K : Hash + Eq] T::sorted_desc(
+  self : T[K],
+  compare : (K, K) -> Int,
+) -> T[K] {
   self.sorted(fn(a, b) { compare(b, a) })
 }
 
@@ -612,7 +623,10 @@ pub fn[K : Hash + Eq + Compare] T::sorted_by_key_desc(self : T[K]) -> T[K] {
 
 ///|
 /// 就地按照指定比较函数反向排序集合
-pub fn[K : Hash + Eq] T::sort_desc(self : T[K], compare : (K, K) -> Int) -> Unit {
+pub fn[K : Hash + Eq] T::sort_desc(
+  self : T[K],
+  compare : (K, K) -> Int,
+) -> Unit {
   self.sort(fn(a, b) { compare(b, a) })
 }
 
