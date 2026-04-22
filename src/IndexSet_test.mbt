@@ -78,7 +78,7 @@ test "is_empty" {
 }
 
 ///|
-test "iter" {
+test "iter method" {
   let m = @IndexSet.of(["a", "b", "c"])
   let mut sum = ""
   m.each(fn(k) { sum += k })
@@ -158,7 +158,7 @@ test "iter" {
 }
 
 ///|
-test "from_array" {
+test "from_array function" {
   let arr = ["a", "b", "c"]
   let m = @IndexSet.from_array(arr)
   assert_true(m.contains("a"))
@@ -168,7 +168,7 @@ test "from_array" {
 }
 
 ///|
-test "insert_and_grow" {
+test "insert_and_grow repeated" {
   let m = @IndexSet.new()
   for i in 0..<10 {
     m.add(i.to_string())
@@ -178,7 +178,7 @@ test "insert_and_grow" {
 }
 
 ///|
-test "remove_and_shift_back" {
+test "remove_and_shift_back repeated" {
   let m = @IndexSet.new()
   m.add("a")
   m.add("b")
@@ -192,7 +192,7 @@ test "remove_and_shift_back" {
 }
 
 ///|
-test "capacity_and_size" {
+test "capacity_and_size repeated" {
   let m = @IndexSet.new()
   assert_eq(m.capacity(), default_init_capacity)
   assert_eq(m.size(), 0)
@@ -201,7 +201,7 @@ test "capacity_and_size" {
 }
 
 ///|
-test "clear_and_reinsert" {
+test "clear_and_reinsert repeated" {
   let m = @IndexSet.new()
   m.add("a")
   m.add("b")
@@ -446,7 +446,7 @@ test "sort" {
 }
 
 ///|
-test "sort_by_key" {
+test "sort_by_key repeated" {
   let set = @IndexSet.of([5, 2, 4, 1, 3])
   set.sort_by_key()
 
