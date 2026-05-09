@@ -24,17 +24,17 @@ let default_init_capacity = 8
 pub fn[K] new(capacity? : Int = default_init_capacity) -> T[K] {
   {
     core: {
-      hash_to_idx: @hashmap.new(),
+      hash_to_idx: @hashmap.HashMap([], capacity~),
       entries: [],
       head: -1,
       tail: -1,
       position_to_idx: [], // 初始化为空数组
-      idx_to_position: @hashmap.new(), // 初始化为空映射
+      idx_to_position: @hashmap.HashMap([], capacity~), // 初始化为空映射
     },
     size: 0,
     capacity,
     growAt: calc_grow_threshold(capacity),
-    key_to_idx: @hashmap.new(),
+    key_to_idx: @hashmap.HashMap::default(),
   }
 }
 
@@ -261,14 +261,14 @@ pub fn[K] T::eachi(self : T[K], f : (Int, K) -> Unit) -> Unit {
 ///|
 /// Clears the set, removing all keys. Keeps the allocated space.
 pub fn[K] T::clear(self : T[K]) -> Unit {
-  self.core.hash_to_idx = @hashmap.new() // 重置为新的哈希表
+  self.core.hash_to_idx = @hashmap.HashMap([], capacity=self.capacity) // 重置为新的哈希表
   self.core.entries = []
   self.core.head = -1
   self.core.tail = -1
   self.core.position_to_idx = [] // 清空位置映射
-  self.core.idx_to_position = @hashmap.new() // 清空索引到位置的映射
+  self.core.idx_to_position = @hashmap.HashMap([], capacity=self.capacity) // 清空索引到位置的映射
   self.size = 0
-  self.key_to_idx = @hashmap.new()
+  self.key_to_idx = @hashmap.HashMap::default()
 }
 
 ///|
@@ -367,14 +367,14 @@ fn[K : Hash + Eq] T::grow(self : T[K]) -> Unit {
   // 创建新的存储
   self.capacity = self.capacity * 2
   self.growAt = calc_grow_threshold(self.capacity)
-  self.core.hash_to_idx = @hashmap.new() // 使用新的哈希表
+  self.core.hash_to_idx = @hashmap.HashMap([], capacity=self.capacity) // 使用新的哈希表
   self.core.entries = []
   self.core.head = -1
   self.core.tail = -1
   self.core.position_to_idx = [] // 重置位置映射
-  self.core.idx_to_position = @hashmap.new() // 重置索引到位置的映射
+  self.core.idx_to_position = @hashmap.HashMap([], capacity=self.capacity) // 重置索引到位置的映射
   self.size = 0
-  self.key_to_idx = @hashmap.new()
+  self.key_to_idx = @hashmap.HashMap([], capacity=self.capacity)
 
   // 重新添加所有元素，保持原顺序
   let mut current = old_head
