@@ -26,8 +26,8 @@ test "doc" {
 ///|
 test "123" {
   let set = @IndexSet.of([100, 200, 300, 400, 500])
-  assert_eq(set.get_at(0), Some(100))
-  assert_eq(set.index_of(300), Some(2))
+  @debug.assert_eq(set.get_at(0), Some(100))
+  @debug.assert_eq(set.index_of(300), Some(2))
 }
 
 ///|
@@ -315,60 +315,60 @@ test "@IndexSet.to_array/multiple" {
 ///|
 test "peek_first" {
   let m = @IndexSet.new()
-  assert_eq(m.peek_first(), None)
+  @debug.assert_eq(m.peek_first(), None)
   m.add("a")
   m.add("b")
   m.add("c")
-  assert_eq(m.peek_first(), Some("a"))
+  @debug.assert_eq(m.peek_first(), Some("a"))
   m.remove("a")
-  assert_eq(m.peek_first(), Some("b"))
+  @debug.assert_eq(m.peek_first(), Some("b"))
   m.clear()
-  assert_eq(m.peek_first(), None)
+  @debug.assert_eq(m.peek_first(), None)
 }
 
 ///|
 test "peek_last" {
   let m = @IndexSet.new()
-  assert_eq(m.peek_last(), None)
+  @debug.assert_eq(m.peek_last(), None)
   m.add("a")
   m.add("b")
   m.add("c")
-  assert_eq(m.peek_last(), Some("c"))
+  @debug.assert_eq(m.peek_last(), Some("c"))
   m.remove("c")
-  assert_eq(m.peek_last(), Some("b"))
+  @debug.assert_eq(m.peek_last(), Some("b"))
   m.clear()
-  assert_eq(m.peek_last(), None)
+  @debug.assert_eq(m.peek_last(), None)
 }
 
 ///|
 test "pop" {
   let m = @IndexSet.new()
-  assert_eq(m.pop(), None)
+  @debug.assert_eq(m.pop(), None)
   m.add("a")
   m.add("b")
   m.add("c")
-  assert_eq(m.pop(), Some("c"))
+  @debug.assert_eq(m.pop(), Some("c"))
   assert_eq(m.size(), 2)
   assert_eq(m.contains("c"), false)
-  assert_eq(m.pop(), Some("b"))
-  assert_eq(m.pop(), Some("a"))
-  assert_eq(m.pop(), None)
+  @debug.assert_eq(m.pop(), Some("b"))
+  @debug.assert_eq(m.pop(), Some("a"))
+  @debug.assert_eq(m.pop(), None)
   assert_eq(m.is_empty(), true)
 }
 
 ///|
 test "shift" {
   let m = @IndexSet.new()
-  assert_eq(m.shift(), None)
+  @debug.assert_eq(m.shift(), None)
   m.add("a")
   m.add("b")
   m.add("c")
-  assert_eq(m.shift(), Some("a"))
+  @debug.assert_eq(m.shift(), Some("a"))
   assert_eq(m.size(), 2)
   assert_eq(m.contains("a"), false)
-  assert_eq(m.shift(), Some("b"))
-  assert_eq(m.shift(), Some("c"))
-  assert_eq(m.shift(), None)
+  @debug.assert_eq(m.shift(), Some("b"))
+  @debug.assert_eq(m.shift(), Some("c"))
+  @debug.assert_eq(m.shift(), None)
   assert_eq(m.is_empty(), true)
 }
 
@@ -378,9 +378,9 @@ test "pop_and_peek" {
   m.add(1)
   m.add(2)
   m.add(3)
-  assert_eq(m.peek_last(), Some(3))
-  assert_eq(m.pop(), Some(3))
-  assert_eq(m.peek_last(), Some(2))
+  @debug.assert_eq(m.peek_last(), Some(3))
+  @debug.assert_eq(m.pop(), Some(3))
+  @debug.assert_eq(m.peek_last(), Some(2))
   assert_eq(m.size(), 2)
 }
 
@@ -390,9 +390,9 @@ test "shift_and_peek" {
   m.add(1)
   m.add(2)
   m.add(3)
-  assert_eq(m.peek_first(), Some(1))
-  assert_eq(m.shift(), Some(1))
-  assert_eq(m.peek_first(), Some(2))
+  @debug.assert_eq(m.peek_first(), Some(1))
+  @debug.assert_eq(m.shift(), Some(1))
+  @debug.assert_eq(m.peek_first(), Some(2))
   assert_eq(m.size(), 2)
 }
 
@@ -534,11 +534,11 @@ test "get_at basic functionality" {
   let set = @IndexSet.of([10, 20, 30, 40, 50])
 
   // 测试正常索引访问
-  assert_eq(set.get_at(0), Some(10))
-  assert_eq(set.get_at(1), Some(20))
-  assert_eq(set.get_at(2), Some(30))
-  assert_eq(set.get_at(3), Some(40))
-  assert_eq(set.get_at(4), Some(50))
+  @debug.assert_eq(set.get_at(0), Some(10))
+  @debug.assert_eq(set.get_at(1), Some(20))
+  @debug.assert_eq(set.get_at(2), Some(30))
+  @debug.assert_eq(set.get_at(3), Some(40))
+  @debug.assert_eq(set.get_at(4), Some(50))
 
   // 测试索引顺序符合插入顺序
   let values = []
@@ -556,13 +556,13 @@ test "get_at boundary cases" {
   let set = @IndexSet.of([1, 2, 3])
 
   // 测试边界情况
-  assert_eq(set.get_at(-1), None) // 负索引
-  assert_eq(set.get_at(3), None) // 越界索引
-  assert_eq(set.get_at(100), None) // 远超越界索引
+  @debug.assert_eq(set.get_at(-1), None) // 负索引
+  @debug.assert_eq(set.get_at(3), None) // 越界索引
+  @debug.assert_eq(set.get_at(100), None) // 远超越界索引
 
   // 空集合测试
   let empty_set : @IndexSet.T[String] = @IndexSet.new()
-  assert_eq(empty_set.get_at(0), None) // 空集合任何索引都返回None
+  @debug.assert_eq(empty_set.get_at(0), None) // 空集合任何索引都返回None
 }
 
 ///|
@@ -570,15 +570,15 @@ test "index_of basic functionality" {
   let set = @IndexSet.of(["apple", "banana", "cherry", "date", "elderberry"])
 
   // 测试正常元素查找
-  assert_eq(set.index_of("apple"), Some(0))
-  assert_eq(set.index_of("banana"), Some(1))
-  assert_eq(set.index_of("cherry"), Some(2))
-  assert_eq(set.index_of("date"), Some(3))
-  assert_eq(set.index_of("elderberry"), Some(4))
+  @debug.assert_eq(set.index_of("apple"), Some(0))
+  @debug.assert_eq(set.index_of("banana"), Some(1))
+  @debug.assert_eq(set.index_of("cherry"), Some(2))
+  @debug.assert_eq(set.index_of("date"), Some(3))
+  @debug.assert_eq(set.index_of("elderberry"), Some(4))
 
   // 测试不存在的元素
-  assert_eq(set.index_of("fig"), None)
-  assert_eq(set.index_of("grape"), None)
+  @debug.assert_eq(set.index_of("fig"), None)
+  @debug.assert_eq(set.index_of("grape"), None)
 }
 
 ///|
