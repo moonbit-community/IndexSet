@@ -279,27 +279,28 @@ test "from_iter empty iter" {
 ///|
 test "IndexSet arbitrary" {
   let samples : Array[@IndexSet.T[Int]] = @quickcheck.samples(20)
-  inspect(
-    samples[5:10],
-    content="[@IndexSet.of([]), @IndexSet.of([]), @IndexSet.of([0]), @IndexSet.of([0]), @IndexSet.of([0, 2, 3, 1])]",
-  )
-  inspect(
-    samples[11:15],
-    content="[@IndexSet.of([0, -1, -2]), @IndexSet.of([0, -2, -5, 4, 8]), @IndexSet.of([0, -1, 2]), @IndexSet.of([0])]",
-  )
+  inspect(samples[5], content="@IndexSet.of([])")
+  inspect(samples[6], content="@IndexSet.of([])")
+  inspect(samples[7], content="@IndexSet.of([0])")
+  inspect(samples[8], content="@IndexSet.of([0])")
+  inspect(samples[9], content="@IndexSet.of([0, 2, 3, 1])")
+  inspect(samples[11], content="@IndexSet.of([0, -1, -2])")
+  inspect(samples[12], content="@IndexSet.of([0, -2, -5, 4, 8])")
+  inspect(samples[13], content="@IndexSet.of([0, -1, 2])")
+  inspect(samples[14], content="@IndexSet.of([0])")
 }
 
 ///|
 test "@IndexSet.to_array/empty" {
   let set : @IndexSet.T[Int] = @IndexSet.new()
-  inspect(set.to_array(), content="[]")
+  @debug.debug_inspect(set.to_array(), content="[]")
 }
 
 ///|
 test "@IndexSet.to_array/single" {
   let set = @IndexSet.new()
   set.add(42)
-  inspect(set.to_array(), content="[42]")
+  @debug.debug_inspect(set.to_array(), content="[42]")
 }
 
 ///|
@@ -309,7 +310,7 @@ test "@IndexSet.to_array/multiple" {
   set.add(2)
   set.add(3)
   set.add(4)
-  inspect(set.to_array(), content="[1, 2, 3, 4]")
+  @debug.debug_inspect(set.to_array(), content="[1, 2, 3, 4]")
 }
 
 ///|
@@ -402,10 +403,10 @@ test "sorted" {
   let sorted_set = set.sorted(fn(a, b) { a - b })
 
   // 原集合保持不变
-  assert_eq(set.to_array(), [5, 2, 4, 1, 3])
+  @debug.assert_eq(set.to_array(), [5, 2, 4, 1, 3])
 
   // 新集合已排序
-  assert_eq(sorted_set.to_array(), [1, 2, 3, 4, 5])
+  @debug.assert_eq(sorted_set.to_array(), [1, 2, 3, 4, 5])
 }
 
 ///|
@@ -414,10 +415,10 @@ test "sorted_by_key" {
   let sorted_set = set.sorted_by_key()
 
   // 原集合保持不变
-  assert_eq(set.to_array(), [5, 2, 4, 1, 3])
+  @debug.assert_eq(set.to_array(), [5, 2, 4, 1, 3])
 
   // 新集合已按自然顺序排序
-  assert_eq(sorted_set.to_array(), [1, 2, 3, 4, 5])
+  @debug.assert_eq(sorted_set.to_array(), [1, 2, 3, 4, 5])
 }
 
 ///|
@@ -427,10 +428,10 @@ test "sorted_by" {
   let sorted_set = set.sorted_by(fn(n) { n % 10 })
 
   // 原集合保持不变
-  assert_eq(set.to_array(), [12, 5, 8, 3, 16, 7])
+  @debug.assert_eq(set.to_array(), [12, 5, 8, 3, 16, 7])
 
   // 新集合按余数排序：12(2), 3(3), 5(5), 16(6), 7(7), 8(8)
-  assert_eq(sorted_set.to_array(), [12, 3, 5, 16, 7, 8])
+  @debug.assert_eq(sorted_set.to_array(), [12, 3, 5, 16, 7, 8])
 }
 
 ///|
@@ -439,10 +440,10 @@ test "sort" {
   set.sort(fn(a, b) { a - b })
 
   // 集合已排序
-  assert_eq(set.to_array(), [1, 2, 3, 4, 5])
+  @debug.assert_eq(set.to_array(), [1, 2, 3, 4, 5])
   let set2 = @IndexSet.of([1])
   set.sort(fn(a, b) { b - a })
-  assert_eq(set2.to_array(), [1])
+  @debug.assert_eq(set2.to_array(), [1])
 }
 
 ///|
@@ -451,7 +452,7 @@ test "sort_by_key repeated" {
   set.sort_by_key()
 
   // 集合已按自然顺序排序
-  assert_eq(set.to_array(), [1, 2, 3, 4, 5])
+  @debug.assert_eq(set.to_array(), [1, 2, 3, 4, 5])
 }
 
 ///|
@@ -460,10 +461,10 @@ test "sort_only_one" {
   set.sort(fn(a, b) { a - b })
 
   // 集合已排序
-  assert_eq(set.to_array(), [5])
+  @debug.assert_eq(set.to_array(), [5])
   let set2 = @IndexSet.of([5])
   set.sort(fn(a, b) { b - a })
-  assert_eq(set2.to_array(), [5])
+  @debug.assert_eq(set2.to_array(), [5])
 }
 
 ///|
@@ -472,7 +473,7 @@ test "sort_by_key" {
   set.sort_by_key()
 
   // 集合已按自然顺序排序
-  assert_eq(set.to_array(), [1, 2, 3, 4, 5])
+  @debug.assert_eq(set.to_array(), [1, 2, 3, 4, 5])
 }
 
 ///|
@@ -484,7 +485,9 @@ test "sort_by" {
   set.sort_by(fn(s) { s.length() })
 
   // 集合已按字符串长度排序: kiwi(4), apple(5), grape(5), banana(6), orange(6)
-  assert_eq(set.to_array(), ["kiwi", "apple", "grape", "banana", "orange"])
+  @debug.assert_eq(set.to_array(), [
+    "kiwi", "apple", "grape", "banana", "orange",
+  ])
 }
 
 ///|
@@ -493,10 +496,10 @@ test "sorted_desc" {
   let sorted_set = set.sorted_desc(fn(a, b) { a - b })
 
   // 原集合保持不变
-  assert_eq(set.to_array(), [1, 4, 2, 5, 3])
+  @debug.assert_eq(set.to_array(), [1, 4, 2, 5, 3])
 
   // 新集合已降序排序
-  assert_eq(sorted_set.to_array(), [5, 4, 3, 2, 1])
+  @debug.assert_eq(sorted_set.to_array(), [5, 4, 3, 2, 1])
 }
 
 ///|
@@ -505,10 +508,10 @@ test "sorted_by_key_desc" {
   let sorted_set = set.sorted_by_key_desc()
 
   // 原集合保持不变
-  assert_eq(set.to_array(), [1, 4, 2, 5, 3])
+  @debug.assert_eq(set.to_array(), [1, 4, 2, 5, 3])
 
   // 新集合已按自然顺序降序排序
-  assert_eq(sorted_set.to_array(), [5, 4, 3, 2, 1])
+  @debug.assert_eq(sorted_set.to_array(), [5, 4, 3, 2, 1])
 }
 
 ///|
@@ -517,7 +520,7 @@ test "sort_desc" {
   set.sort_desc(fn(a, b) { a - b })
 
   // 集合已降序排序
-  assert_eq(set.to_array(), [5, 4, 3, 2, 1])
+  @debug.assert_eq(set.to_array(), [5, 4, 3, 2, 1])
 }
 
 ///|
@@ -526,7 +529,7 @@ test "sort_by_key_desc" {
   set.sort_by_key_desc()
 
   // 集合已按自然顺序降序排序
-  assert_eq(set.to_array(), [5, 4, 3, 2, 1])
+  @debug.assert_eq(set.to_array(), [5, 4, 3, 2, 1])
 }
 
 ///|
@@ -548,7 +551,7 @@ test "get_at basic functionality" {
       None => () // 不应发生
     }
   }
-  assert_eq(values, [10, 20, 30, 40, 50])
+  @debug.assert_eq(values, [10, 20, 30, 40, 50])
 }
 
 ///|
@@ -599,7 +602,7 @@ test "remove_nonexistent_key" {
 
   // 验证集合状态未改变
   assert_eq(set.size(), initial_size)
-  assert_eq(set.to_array(), initial_elements)
+  @debug.assert_eq(set.to_array(), initial_elements)
 
   // 确认原有元素仍然存在
   assert_true(set.contains("key1"))
