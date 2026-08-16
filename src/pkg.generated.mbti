@@ -20,6 +20,7 @@ pub fn[K : Hash + Eq] of(FixedArray[K]) -> T[K]
 // Types and methods
 type T[K]
 pub fn[K : Hash + Eq] T::add(Self[K], K) -> Unit
+pub fn[X : @quickcheck.Arbitrary + Eq + Hash] T::arbitrary(Int, @splitmix.RandomState) -> Self[X]
 pub fn[K] T::capacity(Self[K]) -> Int
 pub fn[K] T::clear(Self[K]) -> Unit
 pub fn[K : Hash + Eq] T::contains(Self[K], K) -> Bool
@@ -33,6 +34,7 @@ pub fn[K : Hash + Eq] T::insert(Self[K], K) -> Unit
 pub fn[K : Hash + Eq] T::intersection(Self[K], Self[K]) -> Self[K]
 pub fn[K] T::is_empty(Self[K]) -> Bool
 pub fn[K] T::iter(Self[K]) -> Iter[K]
+pub fn[K : Show] T::output(Self[K], &Logger) -> Unit
 pub fn[K] T::peek_first(Self[K]) -> K?
 pub fn[K] T::peek_last(Self[K]) -> K?
 pub fn[K : Hash + Eq] T::pop(Self[K]) -> K?
@@ -51,6 +53,7 @@ pub fn[K : Hash + Eq + Compare] T::sorted_by_key_desc(Self[K]) -> Self[K]
 pub fn[K : Hash + Eq] T::sorted_desc(Self[K], (K, K) -> Int) -> Self[K]
 pub fn[K : Hash + Eq] T::symmetric_difference(Self[K], Self[K]) -> Self[K]
 pub fn[K] T::to_array(Self[K]) -> Array[K]
+pub fn[K : Show] T::to_string(Self[K]) -> String
 pub fn[K : Hash + Eq] T::union(Self[K], Self[K]) -> Self[K]
 pub impl[K : Show] Show for T[K]
 pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X]
@@ -58,4 +61,3 @@ pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X]
 // Type aliases
 
 // Traits
-

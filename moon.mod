@@ -1,0 +1,15 @@
+name = "kesmeey/IndexSet"
+
+version = "0.1.6"
+
+readme = "README.md"
+
+repository = "https://github.com/moonbit-community/IndexSet"
+
+license = "Apache-2.0"
+
+keywords = [ "data-structure", "set" ]
+
+description = "Implementing the IndexSet Data Structure Using MoonBit"
+
+source = "src"

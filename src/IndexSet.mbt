@@ -34,7 +34,7 @@ pub fn[K] new(capacity? : Int = default_init_capacity) -> T[K] {
     size: 0,
     capacity,
     growAt: calc_grow_threshold(capacity),
-    key_to_idx: @hashmap.HashMap::default(),
+    key_to_idx: Default::default(),
   }
 }
 
@@ -71,7 +71,7 @@ pub fn[K : Hash + Eq] T::add(self : T[K], key : K) -> Unit {
   }
 
   // 计算哈希值
-  let hash = key.hash()
+  let hash = Hash::hash(key)
 
   // 检查键是否已存在
   if self.contains(key) {
@@ -268,7 +268,7 @@ pub fn[K] T::clear(self : T[K]) -> Unit {
   self.core.position_to_idx = [] // 清空位置映射
   self.core.idx_to_position = @hashmap.HashMap([], capacity=self.capacity) // 清空索引到位置的映射
   self.size = 0
-  self.key_to_idx = @hashmap.HashMap::default()
+  self.key_to_idx = Default::default()
 }
 
 ///|
@@ -391,7 +391,7 @@ fn calc_grow_threshold(capacity : Int) -> Int {
 }
 
 ///|
-pub impl[K : Show] Show for T[K] with output(self, logger) {
+pub impl[K : Show] Show for T[K] with fn output(self, logger) {
   logger.write_iter(self.iter(), prefix="@IndexSet.of([", suffix="])")
 }
 
@@ -522,7 +522,7 @@ pub fn[K] T::peek_last(self : T[K]) -> K? {
 }
 
 ///|
-pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X] with arbitrary(
+pub impl[X : @quickcheck.Arbitrary + Eq + Hash] @quickcheck.Arbitrary for T[X] with fn arbitrary(
   size,
   rs,
 ) {
@@ -545,7 +545,7 @@ pub fn[K : Hash + Eq] T::sorted(self : T[K], compare : (K, K) -> Int) -> T[K] {
 
 ///|
 pub fn[K : Hash + Eq + Compare] T::sorted_by_key(self : T[K]) -> T[K] {
-  self.sorted(fn(a, b) { a.compare(b) })
+  self.sorted(fn(a, b) { Compare::compare(a, b) })
 }
 
 ///|
@@ -594,7 +594,7 @@ pub fn[K : Hash + Eq] T::sort(self : T[K], compare : (K, K) -> Int) -> Unit {
 /// 就地按照自然顺序排序集合
 /// 要求元素类型实现了 Compare trait
 pub fn[K : Hash + Eq + Compare] T::sort_by_key(self : T[K]) -> Unit {
-  self.sort(fn(a, b) { a.compare(b) })
+  self.sort(fn(a, b) { Compare::compare(a, b) })
 }
 
 ///|
@@ -618,7 +618,7 @@ pub fn[K : Hash + Eq] T::sorted_desc(
 ///|
 /// 返回一个按照自然顺序反向排序的新集合
 pub fn[K : Hash + Eq + Compare] T::sorted_by_key_desc(self : T[K]) -> T[K] {
-  self.sorted(fn(a, b) { b.compare(a) })
+  self.sorted(fn(a, b) { Compare::compare(b, a) })
 }
 
 ///|
@@ -633,5 +633,5 @@ pub fn[K : Hash + Eq] T::sort_desc(
 ///|
 /// 就地按照自然顺序反向排序集合
 pub fn[K : Hash + Eq + Compare] T::sort_by_key_desc(self : T[K]) -> Unit {
-  self.sort(fn(a, b) { b.compare(a) })
+  self.sort(fn(a, b) { Compare::compare(b, a) })
 }
