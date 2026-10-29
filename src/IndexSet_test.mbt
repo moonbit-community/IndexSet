@@ -32,7 +32,7 @@ test "123" {
 
 ///|
 test "new" {
-  let m : @IndexSet.T[Int] = @IndexSet.new()
+  let m : @IndexSet.T[Int32] = @IndexSet.new()
   assert_eq(m.capacity(), default_init_capacity)
   assert_eq(m.size(), 0)
 }
@@ -148,7 +148,7 @@ test "symmetric_difference" {
 
 ///|
 test "iter" {
-  let buf = StringBuilder::new(size_hint=20)
+  let buf = StringBuilder(size_hint=20)
   let map = @IndexSet.of(["a", "b", "c"])
   map.iter().each(fn(e) { buf.write_string("[\{e}]") })
   inspect(buf, content="[a][b][c]")
@@ -272,27 +272,35 @@ test "from_iter single element iter" {
 
 ///|
 test "from_iter empty iter" {
-  let map : @IndexSet.T[Int] = @IndexSet.from_iter(Iter::empty())
+  let map : @IndexSet.T[Int32] = @IndexSet.from_iter(Iter::empty())
   inspect(map, content="@IndexSet.of([])")
 }
 
 ///|
-test "IndexSet arbitrary" {
-  let samples : Array[@IndexSet.T[Int]] = @quickcheck.samples(20)
-  inspect(samples[5], content="@IndexSet.of([])")
-  inspect(samples[6], content="@IndexSet.of([])")
-  inspect(samples[7], content="@IndexSet.of([0])")
-  inspect(samples[8], content="@IndexSet.of([0])")
-  inspect(samples[9], content="@IndexSet.of([0, 2, 3, 1])")
-  inspect(samples[11], content="@IndexSet.of([0, -1, -2])")
-  inspect(samples[12], content="@IndexSet.of([0, -2, -5, 4, 8])")
-  inspect(samples[13], content="@IndexSet.of([0, -1, 2])")
-  inspect(samples[14], content="@IndexSet.of([0])")
+test "IndexSet arbitrary preserves unique elements and membership" {
+  let samples : Array[@IndexSet.T[Int32]] = @quickcheck.samples(100)
+  assert_eq(samples.length(), 100)
+  let mut nonempty = false
+  for sample in samples {
+    let elements = sample.to_array()
+    assert_eq(sample.size(), elements.length())
+    let seen : Map[Int32, Bool] = Map([])
+    for element in elements {
+      assert_true(!seen.contains(element))
+      seen[element] = true
+      assert_true(sample.contains(element))
+    }
+    @debug.assert_eq(@IndexSet.from_array(elements).to_array(), elements)
+    if elements.length() > 0 {
+      nonempty = true
+    }
+  }
+  assert_true(nonempty)
 }
 
 ///|
 test "@IndexSet.to_array/empty" {
-  let set : @IndexSet.T[Int] = @IndexSet.new()
+  let set : @IndexSet.T[Int32] = @IndexSet.new()
   @debug.debug_inspect(set.to_array(), content="[]")
 }
 

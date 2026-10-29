@@ -1,5 +1,8 @@
 import {
-  "moonbitlang/core/debug",
   "moonbitlang/core/hashmap",
   "moonbitlang/core/quickcheck",
 }
+
+import {
+  "moonbitlang/core/debug",
+} for "test"
